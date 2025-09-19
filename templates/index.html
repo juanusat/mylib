@@ -282,66 +282,202 @@
                         <form id="editForm" class="space-y-4">
                             <input type="hidden" id="articleId">
                             
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Título Español</label>
-                                    <input type="text" id="titulo_espanol" class="w-full p-2 border border-gray-300 rounded-md">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Investigación</label>
-                                    <input type="text" id="tipo_investigacion" class="w-full p-2 border border-gray-300 rounded-md">
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Resumen</label>
-                                <textarea id="resumen" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Problema a Solucionar</label>
-                                <textarea id="problema_articulo" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-                            </div>
-
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Pregunta de Investigación</label>
-                                <textarea id="pregunta_investigacion" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Objetivo Español</label>
-                                    <textarea id="objetivo_espanol" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Objetivo Reescrito</label>
-                                    <textarea id="objetivo_reescrito" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            <!-- Información básica -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Información Básica</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">ID</label>
+                                        <input type="text" id="edit_id" class="w-full p-2 border border-gray-300 rounded-md bg-gray-100" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Autor</label>
+                                        <input type="text" id="edit_autor" class="w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Año</label>
+                                        <input type="number" id="edit_anio" class="w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Base de Datos</label>
+                                        <input type="text" id="edit_base_datos" class="w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">DOI</label>
+                                        <input type="text" id="edit_doi" class="w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">EID</label>
+                                        <input type="text" id="edit_eid" class="w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
                                 </div>
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Justificación</label>
-                                <textarea id="justificacion" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            <!-- Revista -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Revista</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre de la Revista</label>
+                                        <input type="text" id="edit_nombre_revista" class="w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Quartil de la Revista</label>
+                                        <input type="text" id="edit_quartil_revista" class="w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Hipótesis</label>
-                                <textarea id="hipotesis" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            <!-- Títulos -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Títulos</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Título Original</label>
+                                        <textarea id="edit_titulo_original" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Título Español</label>
+                                        <textarea id="titulo_espanol" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Resultados</label>
-                                <textarea id="resultados" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            <!-- Resúmenes -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Resúmenes</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Abstract</label>
+                                        <textarea id="edit_abstract" rows="4" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Resumen</label>
+                                        <textarea id="resumen" rows="4" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Conclusiones</label>
-                                <textarea id="conclusiones" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            <!-- Keywords -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Palabras Clave</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Keywords del Autor</label>
+                                        <textarea id="edit_keywords_autor" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Keywords Indexados</label>
+                                        <textarea id="edit_keywords_indexed" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div class="flex items-center">
-                                <input type="checkbox" id="seleccionado" class="mr-2">
-                                <label for="seleccionado" class="text-sm font-medium text-gray-700">Seleccionado</label>
+                            <!-- Investigación -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Investigación</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Problema a Solucionar</label>
+                                        <textarea id="problema_articulo" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Pregunta de Investigación</label>
+                                        <textarea id="pregunta_investigacion" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Investigación</label>
+                                        <input type="text" id="tipo_investigacion" class="w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Datos Estadísticos</label>
+                                        <textarea id="edit_datos_estadisticos" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Objetivos -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Objetivos</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Objetivo Original</label>
+                                        <textarea id="edit_objetivo_original" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Objetivo Español</label>
+                                        <textarea id="objetivo_espanol" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Objetivo Reescrito</label>
+                                        <textarea id="objetivo_reescrito" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Metodología -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Metodología</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Justificación</label>
+                                        <textarea id="justificacion" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Hipótesis</label>
+                                        <textarea id="hipotesis" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Estudios Previos</label>
+                                        <textarea id="edit_estudios_previos" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Población/Muestra/Datos</label>
+                                        <textarea id="edit_poblacion_muestra_datos" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Recolección de Datos</label>
+                                        <textarea id="edit_recoleccion_datos" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Resultados y Conclusiones -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Resultados y Conclusiones</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Resultados</label>
+                                        <textarea id="resultados" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Conclusiones</label>
+                                        <textarea id="conclusiones" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Discusión</label>
+                                        <textarea id="edit_discusion" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Trabajos Futuros</label>
+                                        <textarea id="edit_trabajos_futuros" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Enlaces y Estado -->
+                            <div class="border-b pb-4 mb-4">
+                                <h4 class="font-semibold text-gray-800 mb-3">Enlaces y Estado</h4>
+                                <div class="space-y-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Enlace</label>
+                                        <input type="url" id="edit_enlace" class="w-full p-2 border border-gray-300 rounded-md">
+                                    </div>
+                                    <div class="flex items-center">
+                                        <input type="checkbox" id="seleccionado" class="mr-2">
+                                        <label for="seleccionado" class="text-sm font-medium text-gray-700">Seleccionado como de interés</label>
+                                    </div>
+                                </div>
                             </div>
                         </form>
                     </div>

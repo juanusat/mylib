@@ -3,6 +3,7 @@ let allArticles = [];
 let filteredArticles = [];
 let currentPage = 1;
 let itemsPerPage = 25;
+let readonlyFields = []; // Fields that are read-only (imported from Scopus)
 let visibleColumns = {
     id: true,
     titulo_original: true,
@@ -40,9 +41,20 @@ let visibleColumns = {
 
 // Load articles on page load
 document.addEventListener('DOMContentLoaded', function() {
+    loadFieldMetadata();
     loadArticles();
     updateColumns();
 });
+
+async function loadFieldMetadata() {
+    try {
+        const response = await fetch('/api/field-metadata');
+        const data = await response.json();
+        readonlyFields = data.readonly_fields;
+    } catch (error) {
+        console.error('Error loading field metadata:', error);
+    }
+}
 
 async function loadArticles() {
     try {
@@ -518,19 +530,63 @@ async function editArticle(id) {
         const response = await fetch(`/api/articles/${id}`);
         const article = await response.json();
         
+        // Populate all fields
         document.getElementById('articleId').value = article.id;
-        document.getElementById('titulo_espanol').value = article.titulo_espanol || '';
-        document.getElementById('resumen').value = article.resumen || '';
-        document.getElementById('problema_articulo').value = article.problema_articulo || '';
-        document.getElementById('pregunta_investigacion').value = article.pregunta_investigacion || '';
-        document.getElementById('objetivo_espanol').value = article.objetivo_espanol || '';
-        document.getElementById('objetivo_reescrito').value = article.objetivo_reescrito || '';
-        document.getElementById('justificacion').value = article.justificacion || '';
-        document.getElementById('hipotesis').value = article.hipotesis || '';
-        document.getElementById('tipo_investigacion').value = article.tipo_investigacion || '';
-        document.getElementById('resultados').value = article.resultados || '';
-        document.getElementById('conclusiones').value = article.conclusiones || '';
+        
+        // Basic information
+        setFieldValue('edit_id', article.id);
+        setFieldValue('edit_autor', article.autor);
+        setFieldValue('edit_anio', article.anio);
+        setFieldValue('edit_base_datos', article.base_datos);
+        setFieldValue('edit_doi', article.doi);
+        setFieldValue('edit_eid', article.eid);
+        
+        // Journal
+        setFieldValue('edit_nombre_revista', article.nombre_revista);
+        setFieldValue('edit_quartil_revista', article.quartil_revista);
+        
+        // Titles
+        setFieldValue('edit_titulo_original', article.titulo_original);
+        setFieldValue('titulo_espanol', article.titulo_espanol);
+        
+        // Abstracts
+        setFieldValue('edit_abstract', article.abstract);
+        setFieldValue('resumen', article.resumen);
+        
+        // Keywords
+        setFieldValue('edit_keywords_autor', article.keywords_autor);
+        setFieldValue('edit_keywords_indexed', article.keywords_indexed);
+        
+        // Research
+        setFieldValue('problema_articulo', article.problema_articulo);
+        setFieldValue('pregunta_investigacion', article.pregunta_investigacion);
+        setFieldValue('tipo_investigacion', article.tipo_investigacion);
+        setFieldValue('edit_datos_estadisticos', article.datos_estadisticos);
+        
+        // Objectives
+        setFieldValue('edit_objetivo_original', article.objetivo_original);
+        setFieldValue('objetivo_espanol', article.objetivo_espanol);
+        setFieldValue('objetivo_reescrito', article.objetivo_reescrito);
+        
+        // Methodology
+        setFieldValue('justificacion', article.justificacion);
+        setFieldValue('hipotesis', article.hipotesis);
+        setFieldValue('edit_estudios_previos', article.estudios_previos);
+        setFieldValue('edit_poblacion_muestra_datos', article.poblacion_muestra_datos);
+        setFieldValue('edit_recoleccion_datos', article.recoleccion_datos);
+        
+        // Results and conclusions
+        setFieldValue('resultados', article.resultados);
+        setFieldValue('conclusiones', article.conclusiones);
+        setFieldValue('edit_discusion', article.discusion);
+        setFieldValue('edit_trabajos_futuros', article.trabajos_futuros);
+        
+        // Links and status
+        setFieldValue('edit_enlace', article.enlace);
         document.getElementById('seleccionado').checked = article.seleccionado || false;
+        
+        // Configure readonly fields
+        configureReadonlyFields();
         
         document.getElementById('editModal').classList.remove('hidden');
     } catch (error) {
@@ -538,20 +594,109 @@ async function editArticle(id) {
     }
 }
 
+function setFieldValue(fieldId, value) {
+    const field = document.getElementById(fieldId);
+    if (field) {
+        field.value = value || '';
+    }
+}
+
+function configureReadonlyFields() {
+    // Map of database column names to form field IDs
+    const fieldMapping = {
+        'autor': 'edit_autor',
+        'nombre_revista': 'edit_nombre_revista',
+        'quartil_revista': 'edit_quartil_revista',
+        'anio': 'edit_anio',
+        'doi': 'edit_doi',
+        'titulo_original': 'edit_titulo_original',
+        'base_datos': 'edit_base_datos',
+        'abstract': 'edit_abstract',
+        'keywords_autor': 'edit_keywords_autor',
+        'keywords_indexed': 'edit_keywords_indexed',
+        'enlace': 'edit_enlace',
+        'eid': 'edit_eid'
+    };
+    
+    // Configure all fields as editable first
+    Object.values(fieldMapping).forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.readOnly = false;
+            field.classList.remove('bg-gray-100', 'cursor-not-allowed');
+            field.classList.add('bg-white');
+        }
+    });
+    
+    // Make readonly fields non-editable and style them
+    readonlyFields.forEach(columnName => {
+        const fieldId = fieldMapping[columnName];
+        if (fieldId) {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                field.readOnly = true;
+                field.classList.remove('bg-white');
+                field.classList.add('bg-gray-100', 'cursor-not-allowed');
+                field.title = 'Campo importado desde Scopus (solo lectura)';
+            }
+        }
+    });
+}
+
 async function saveArticle() {
     const id = document.getElementById('articleId').value;
+    
+    // Collect all editable field values
     const data = {
-        titulo_espanol: document.getElementById('titulo_espanol').value,
-        resumen: document.getElementById('resumen').value,
-        problema_articulo: document.getElementById('problema_articulo').value,
-        pregunta_investigacion: document.getElementById('pregunta_investigacion').value,
-        objetivo_espanol: document.getElementById('objetivo_espanol').value,
-        objetivo_reescrito: document.getElementById('objetivo_reescrito').value,
-        justificacion: document.getElementById('justificacion').value,
-        hipotesis: document.getElementById('hipotesis').value,
-        tipo_investigacion: document.getElementById('tipo_investigacion').value,
-        resultados: document.getElementById('resultados').value,
-        conclusiones: document.getElementById('conclusiones').value,
+        // Basic information (only non-readonly fields)
+        autor: getFieldValue('edit_autor'),
+        anio: getFieldValue('edit_anio') ? parseInt(getFieldValue('edit_anio')) : null,
+        base_datos: getFieldValue('edit_base_datos'),
+        doi: getFieldValue('edit_doi'),
+        eid: getFieldValue('edit_eid'),
+        
+        // Journal
+        nombre_revista: getFieldValue('edit_nombre_revista'),
+        quartil_revista: getFieldValue('edit_quartil_revista'),
+        
+        // Titles
+        titulo_original: getFieldValue('edit_titulo_original'),
+        titulo_espanol: getFieldValue('titulo_espanol'),
+        
+        // Abstracts
+        abstract: getFieldValue('edit_abstract'),
+        resumen: getFieldValue('resumen'),
+        
+        // Keywords
+        keywords_autor: getFieldValue('edit_keywords_autor'),
+        keywords_indexed: getFieldValue('edit_keywords_indexed'),
+        
+        // Research
+        problema_articulo: getFieldValue('problema_articulo'),
+        pregunta_investigacion: getFieldValue('pregunta_investigacion'),
+        tipo_investigacion: getFieldValue('tipo_investigacion'),
+        datos_estadisticos: getFieldValue('edit_datos_estadisticos'),
+        
+        // Objectives
+        objetivo_original: getFieldValue('edit_objetivo_original'),
+        objetivo_espanol: getFieldValue('objetivo_espanol'),
+        objetivo_reescrito: getFieldValue('objetivo_reescrito'),
+        
+        // Methodology
+        justificacion: getFieldValue('justificacion'),
+        hipotesis: getFieldValue('hipotesis'),
+        estudios_previos: getFieldValue('edit_estudios_previos'),
+        poblacion_muestra_datos: getFieldValue('edit_poblacion_muestra_datos'),
+        recoleccion_datos: getFieldValue('edit_recoleccion_datos'),
+        
+        // Results and conclusions
+        resultados: getFieldValue('resultados'),
+        conclusiones: getFieldValue('conclusiones'),
+        discusion: getFieldValue('edit_discusion'),
+        trabajos_futuros: getFieldValue('edit_trabajos_futuros'),
+        
+        // Links and status
+        enlace: getFieldValue('edit_enlace'),
         seleccionado: document.getElementById('seleccionado').checked
     };
 
@@ -575,6 +720,11 @@ async function saveArticle() {
         showMessage('Error al guardar', 'error');
         console.error('Error:', error);
     }
+}
+
+function getFieldValue(fieldId) {
+    const field = document.getElementById(fieldId);
+    return field ? field.value : '';
 }
 
 function closeModal() {

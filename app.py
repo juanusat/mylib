@@ -126,21 +126,27 @@ def update_article(article_id):
     
     cur.execute('''
         UPDATE articulos SET 
-            titulo_espanol = %s, resumen = %s, problema_articulo = %s,
-            datos_estadisticos = %s, pregunta_investigacion = %s, 
+            autor = %s, nombre_revista = %s, quartil_revista = %s, anio = %s, doi = %s,
+            titulo_original = %s, titulo_espanol = %s, base_datos = %s, abstract = %s, 
+            resumen = %s, keywords_autor = %s, keywords_indexed = %s, problema_articulo = %s,
+            datos_estadisticos = %s, pregunta_investigacion = %s, objetivo_original = %s,
             objetivo_espanol = %s, objetivo_reescrito = %s, justificacion = %s,
             hipotesis = %s, tipo_investigacion = %s, estudios_previos = %s,
             poblacion_muestra_datos = %s, recoleccion_datos = %s, resultados = %s,
-            conclusiones = %s, discusion = %s, trabajos_futuros = %s, seleccionado = %s
+            conclusiones = %s, discusion = %s, trabajos_futuros = %s, enlace = %s,
+            eid = %s, seleccionado = %s
         WHERE id = %s
     ''', (
-        data.get('titulo_espanol'), data.get('resumen'), data.get('problema_articulo'),
-        data.get('datos_estadisticos'), data.get('pregunta_investigacion'),
+        data.get('autor'), data.get('nombre_revista'), data.get('quartil_revista'), 
+        data.get('anio'), data.get('doi'), data.get('titulo_original'), data.get('titulo_espanol'),
+        data.get('base_datos'), data.get('abstract'), data.get('resumen'), 
+        data.get('keywords_autor'), data.get('keywords_indexed'), data.get('problema_articulo'),
+        data.get('datos_estadisticos'), data.get('pregunta_investigacion'), data.get('objetivo_original'),
         data.get('objetivo_espanol'), data.get('objetivo_reescrito'), data.get('justificacion'),
         data.get('hipotesis'), data.get('tipo_investigacion'), data.get('estudios_previos'),
         data.get('poblacion_muestra_datos'), data.get('recoleccion_datos'), data.get('resultados'),
         data.get('conclusiones'), data.get('discusion'), data.get('trabajos_futuros'),
-        data.get('seleccionado'), article_id
+        data.get('enlace'), data.get('eid'), data.get('seleccionado'), article_id
     ))
     
     conn.commit()
@@ -200,6 +206,20 @@ def check_csv():
         'new_count': len(new_articles),
         'existing_articles': existing_articles,
         'has_duplicates': len(existing_articles) > 0
+    })
+
+@app.route('/api/field-metadata', methods=['GET'])
+def get_field_metadata():
+    """Get metadata about which fields are read-only (imported from Scopus)"""
+    conn = get_db_connection()
+    cur = conn.cursor()
+    cur.execute('SELECT columna, id_from_backup FROM metadata_columnas WHERE id_from_backup IS NOT NULL AND id_from_backup != \'\'')
+    readonly_fields = cur.fetchall()
+    cur.close()
+    conn.close()
+    
+    return jsonify({
+        'readonly_fields': [row[0] for row in readonly_fields]
     })
 
 @app.route('/api/import-csv', methods=['POST'])
