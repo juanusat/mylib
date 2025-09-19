@@ -5,12 +5,36 @@ let currentPage = 1;
 let itemsPerPage = 25;
 let visibleColumns = {
     id: true,
-    titulo: true,
+    titulo_original: true,
+    titulo_espanol: false,
     autor: false,
     anio: false,
-    revista: false,
+    nombre_revista: false,
+    quartil_revista: false,
     doi: true,
+    base_datos: false,
+    abstract: false,
+    resumen: false,
+    keywords_autor: false,
+    keywords_indexed: false,
+    problema_articulo: false,
+    datos_estadisticos: false,
+    pregunta_investigacion: false,
+    objetivo_original: false,
+    objetivo_espanol: false,
+    objetivo_reescrito: false,
+    justificacion: false,
+    hipotesis: false,
+    tipo_investigacion: false,
+    estudios_previos: false,
+    poblacion_muestra_datos: false,
+    recoleccion_datos: false,
+    resultados: false,
+    conclusiones: false,
+    discusion: false,
+    trabajos_futuros: false,
     enlace: true,
+    eid: false,
     seleccionado: true
 };
 
@@ -41,12 +65,36 @@ function renderTableHeader() {
     const header = document.getElementById('tableHeader');
     const columns = [
         { key: 'id', label: 'ID', visible: visibleColumns.id },
-        { key: 'titulo', label: 'Título', visible: visibleColumns.titulo },
+        { key: 'titulo_original', label: 'Título Original', visible: visibleColumns.titulo_original },
+        { key: 'titulo_espanol', label: 'Título Español', visible: visibleColumns.titulo_espanol },
         { key: 'autor', label: 'Autor', visible: visibleColumns.autor },
         { key: 'anio', label: 'Año', visible: visibleColumns.anio },
-        { key: 'revista', label: 'Revista', visible: visibleColumns.revista },
+        { key: 'nombre_revista', label: 'Revista', visible: visibleColumns.nombre_revista },
+        { key: 'quartil_revista', label: 'Quartil', visible: visibleColumns.quartil_revista },
         { key: 'doi', label: 'DOI', visible: visibleColumns.doi },
+        { key: 'base_datos', label: 'Base de Datos', visible: visibleColumns.base_datos },
+        { key: 'abstract', label: 'Abstract', visible: visibleColumns.abstract },
+        { key: 'resumen', label: 'Resumen', visible: visibleColumns.resumen },
+        { key: 'keywords_autor', label: 'Keywords Autor', visible: visibleColumns.keywords_autor },
+        { key: 'keywords_indexed', label: 'Keywords Indexados', visible: visibleColumns.keywords_indexed },
+        { key: 'problema_articulo', label: 'Problema', visible: visibleColumns.problema_articulo },
+        { key: 'datos_estadisticos', label: 'Datos Estadísticos', visible: visibleColumns.datos_estadisticos },
+        { key: 'pregunta_investigacion', label: 'Pregunta Investigación', visible: visibleColumns.pregunta_investigacion },
+        { key: 'objetivo_original', label: 'Objetivo Original', visible: visibleColumns.objetivo_original },
+        { key: 'objetivo_espanol', label: 'Objetivo Español', visible: visibleColumns.objetivo_espanol },
+        { key: 'objetivo_reescrito', label: 'Objetivo Reescrito', visible: visibleColumns.objetivo_reescrito },
+        { key: 'justificacion', label: 'Justificación', visible: visibleColumns.justificacion },
+        { key: 'hipotesis', label: 'Hipótesis', visible: visibleColumns.hipotesis },
+        { key: 'tipo_investigacion', label: 'Tipo Investigación', visible: visibleColumns.tipo_investigacion },
+        { key: 'estudios_previos', label: 'Estudios Previos', visible: visibleColumns.estudios_previos },
+        { key: 'poblacion_muestra_datos', label: 'Población/Muestra', visible: visibleColumns.poblacion_muestra_datos },
+        { key: 'recoleccion_datos', label: 'Recolección Datos', visible: visibleColumns.recoleccion_datos },
+        { key: 'resultados', label: 'Resultados', visible: visibleColumns.resultados },
+        { key: 'conclusiones', label: 'Conclusiones', visible: visibleColumns.conclusiones },
+        { key: 'discusion', label: 'Discusión', visible: visibleColumns.discusion },
+        { key: 'trabajos_futuros', label: 'Trabajos Futuros', visible: visibleColumns.trabajos_futuros },
         { key: 'enlace', label: 'Enlace', visible: visibleColumns.enlace },
+        { key: 'eid', label: 'EID', visible: visibleColumns.eid },
         { key: 'seleccionado', label: 'Seleccionado', visible: visibleColumns.seleccionado },
         { key: 'acciones', label: 'Acciones', visible: true }
     ];
@@ -70,8 +118,13 @@ function renderTableBody() {
             cells.push(`<td class="border border-gray-300 px-4 py-2">${article.id}</td>`);
         }
         
-        if (visibleColumns.titulo) {
+        if (visibleColumns.titulo_original) {
             const titulo = article.titulo_original || 'Sin título';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${titulo}">${titulo}</td>`);
+        }
+        
+        if (visibleColumns.titulo_espanol) {
+            const titulo = article.titulo_espanol || '';
             cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${titulo}">${titulo}</td>`);
         }
         
@@ -84,9 +137,13 @@ function renderTableBody() {
             cells.push(`<td class="border border-gray-300 px-4 py-2">${article.anio || ''}</td>`);
         }
         
-        if (visibleColumns.revista) {
+        if (visibleColumns.nombre_revista) {
             const revista = article.nombre_revista || '';
             cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${revista}">${revista}</td>`);
+        }
+        
+        if (visibleColumns.quartil_revista) {
+            cells.push(`<td class="border border-gray-300 px-4 py-2">${article.quartil_revista || ''}</td>`);
         }
         
         if (visibleColumns.doi) {
@@ -95,10 +152,117 @@ function renderTableBody() {
             cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate">${doiLink}</td>`);
         }
         
+        if (visibleColumns.base_datos) {
+            cells.push(`<td class="border border-gray-300 px-4 py-2">${article.base_datos || ''}</td>`);
+        }
+        
+        if (visibleColumns.abstract) {
+            const abstract = article.abstract || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${abstract}">${abstract}</td>`);
+        }
+        
+        if (visibleColumns.resumen) {
+            const resumen = article.resumen || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${resumen}">${resumen}</td>`);
+        }
+        
+        if (visibleColumns.keywords_autor) {
+            const keywords = article.keywords_autor || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${keywords}">${keywords}</td>`);
+        }
+        
+        if (visibleColumns.keywords_indexed) {
+            const keywords = article.keywords_indexed || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${keywords}">${keywords}</td>`);
+        }
+        
+        if (visibleColumns.problema_articulo) {
+            const problema = article.problema_articulo || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${problema}">${problema}</td>`);
+        }
+        
+        if (visibleColumns.datos_estadisticos) {
+            const datos = article.datos_estadisticos || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${datos}">${datos}</td>`);
+        }
+        
+        if (visibleColumns.pregunta_investigacion) {
+            const pregunta = article.pregunta_investigacion || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${pregunta}">${pregunta}</td>`);
+        }
+        
+        if (visibleColumns.objetivo_original) {
+            const objetivo = article.objetivo_original || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${objetivo}">${objetivo}</td>`);
+        }
+        
+        if (visibleColumns.objetivo_espanol) {
+            const objetivo = article.objetivo_espanol || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${objetivo}">${objetivo}</td>`);
+        }
+        
+        if (visibleColumns.objetivo_reescrito) {
+            const objetivo = article.objetivo_reescrito || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${objetivo}">${objetivo}</td>`);
+        }
+        
+        if (visibleColumns.justificacion) {
+            const justificacion = article.justificacion || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${justificacion}">${justificacion}</td>`);
+        }
+        
+        if (visibleColumns.hipotesis) {
+            const hipotesis = article.hipotesis || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${hipotesis}">${hipotesis}</td>`);
+        }
+        
+        if (visibleColumns.tipo_investigacion) {
+            cells.push(`<td class="border border-gray-300 px-4 py-2">${article.tipo_investigacion || ''}</td>`);
+        }
+        
+        if (visibleColumns.estudios_previos) {
+            const estudios = article.estudios_previos || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${estudios}">${estudios}</td>`);
+        }
+        
+        if (visibleColumns.poblacion_muestra_datos) {
+            const poblacion = article.poblacion_muestra_datos || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${poblacion}">${poblacion}</td>`);
+        }
+        
+        if (visibleColumns.recoleccion_datos) {
+            const recoleccion = article.recoleccion_datos || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${recoleccion}">${recoleccion}</td>`);
+        }
+        
+        if (visibleColumns.resultados) {
+            const resultados = article.resultados || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${resultados}">${resultados}</td>`);
+        }
+        
+        if (visibleColumns.conclusiones) {
+            const conclusiones = article.conclusiones || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${conclusiones}">${conclusiones}</td>`);
+        }
+        
+        if (visibleColumns.discusion) {
+            const discusion = article.discusion || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${discusion}">${discusion}</td>`);
+        }
+        
+        if (visibleColumns.trabajos_futuros) {
+            const trabajos = article.trabajos_futuros || '';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs truncate" title="${trabajos}">${trabajos}</td>`);
+        }
+        
         if (visibleColumns.enlace) {
             const enlace = article.enlace || '';
             const enlaceLink = enlace ? `<a href="${enlace}" target="_blank" class="text-blue-600 hover:underline"><i class="fas fa-external-link-alt"></i></a>` : '';
             cells.push(`<td class="border border-gray-300 px-4 py-2 text-center">${enlaceLink}</td>`);
+        }
+        
+        if (visibleColumns.eid) {
+            cells.push(`<td class="border border-gray-300 px-4 py-2">${article.eid || ''}</td>`);
         }
         
         if (visibleColumns.seleccionado) {
@@ -109,10 +273,15 @@ function renderTableBody() {
         }
         
         // Actions column (always visible)
+        const isSelected = article.seleccionado ? 'checked' : '';
         cells.push(`<td class="border border-gray-300 px-4 py-2 text-center">
-            <button onclick="editArticle(${article.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
-                <i class="fas fa-edit"></i> Editar
-            </button>
+            <div class="flex items-center justify-center space-x-2">
+                <input type="checkbox" ${isSelected} onchange="toggleSelection(${article.id})" 
+                       class="mr-2" title="Marcar como seleccionado">
+                <button onclick="editArticle(${article.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                    <i class="fas fa-edit"></i> Editar
+                </button>
+            </div>
         </td>`);
 
         return `<tr class="hover:bg-gray-50">${cells.join('')}</tr>`;
@@ -164,9 +333,23 @@ function changeItemsPerPage() {
 
 function filterArticles() {
     const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    filteredArticles = allArticles.filter(article => 
-        (article.titulo_original || '').toLowerCase().includes(searchTerm)
-    );
+    const selectionFilter = document.getElementById('selectionFilter').value;
+    
+    filteredArticles = allArticles.filter(article => {
+        // Search filter
+        const titleMatch = (article.titulo_original || '').toLowerCase().includes(searchTerm);
+        
+        // Selection filter
+        let selectionMatch = true;
+        if (selectionFilter === 'SEL:V') {
+            selectionMatch = article.seleccionado === true;
+        } else if (selectionFilter === 'SEL:F') {
+            selectionMatch = article.seleccionado === false;
+        }
+        
+        return titleMatch && selectionMatch;
+    });
+    
     currentPage = 1;
     renderTable();
 }
@@ -179,12 +362,36 @@ function toggleColumnSettings() {
 function updateColumns() {
     visibleColumns = {
         id: document.getElementById('col-id').checked,
-        titulo: document.getElementById('col-titulo').checked,
+        titulo_original: document.getElementById('col-titulo_original').checked,
+        titulo_espanol: document.getElementById('col-titulo_espanol').checked,
         autor: document.getElementById('col-autor').checked,
         anio: document.getElementById('col-anio').checked,
-        revista: document.getElementById('col-revista').checked,
+        nombre_revista: document.getElementById('col-nombre_revista').checked,
+        quartil_revista: document.getElementById('col-quartil_revista').checked,
         doi: document.getElementById('col-doi').checked,
+        base_datos: document.getElementById('col-base_datos').checked,
+        abstract: document.getElementById('col-abstract').checked,
+        resumen: document.getElementById('col-resumen').checked,
+        keywords_autor: document.getElementById('col-keywords_autor').checked,
+        keywords_indexed: document.getElementById('col-keywords_indexed').checked,
+        problema_articulo: document.getElementById('col-problema_articulo').checked,
+        datos_estadisticos: document.getElementById('col-datos_estadisticos').checked,
+        pregunta_investigacion: document.getElementById('col-pregunta_investigacion').checked,
+        objetivo_original: document.getElementById('col-objetivo_original').checked,
+        objetivo_espanol: document.getElementById('col-objetivo_espanol').checked,
+        objetivo_reescrito: document.getElementById('col-objetivo_reescrito').checked,
+        justificacion: document.getElementById('col-justificacion').checked,
+        hipotesis: document.getElementById('col-hipotesis').checked,
+        tipo_investigacion: document.getElementById('col-tipo_investigacion').checked,
+        estudios_previos: document.getElementById('col-estudios_previos').checked,
+        poblacion_muestra_datos: document.getElementById('col-poblacion_muestra_datos').checked,
+        recoleccion_datos: document.getElementById('col-recoleccion_datos').checked,
+        resultados: document.getElementById('col-resultados').checked,
+        conclusiones: document.getElementById('col-conclusiones').checked,
+        discusion: document.getElementById('col-discusion').checked,
+        trabajos_futuros: document.getElementById('col-trabajos_futuros').checked,
         enlace: document.getElementById('col-enlace').checked,
+        eid: document.getElementById('col-eid').checked,
         seleccionado: document.getElementById('col-seleccionado').checked
     };
     renderTable();
@@ -383,6 +590,42 @@ function showMessage(message, type) {
     setTimeout(() => {
         messageDiv.classList.add('hidden');
     }, 5000);
+}
+
+async function toggleSelection(id) {
+    try {
+        const article = allArticles.find(a => a.id === id);
+        const newSelectionState = !article.seleccionado;
+        
+        const response = await fetch(`/api/articles/${id}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ seleccionado: newSelectionState })
+        });
+
+        if (response.ok) {
+            // Update local data
+            article.seleccionado = newSelectionState;
+            // Update filtered articles too
+            const filteredArticle = filteredArticles.find(a => a.id === id);
+            if (filteredArticle) {
+                filteredArticle.seleccionado = newSelectionState;
+            }
+            renderTable();
+        } else {
+            showMessage('Error al actualizar la selección', 'error');
+            // Revert checkbox state
+            const checkbox = document.querySelector(`input[onchange="toggleSelection(${id})"]`);
+            if (checkbox) {
+                checkbox.checked = article.seleccionado;
+            }
+        }
+    } catch (error) {
+        showMessage('Error al actualizar la selección', 'error');
+        console.error('Error:', error);
+    }
 }
 
 function exportExcel() {

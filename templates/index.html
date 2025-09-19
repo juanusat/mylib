@@ -85,6 +85,13 @@
             
             <!-- Search and Controls -->
             <div class="mb-4 flex flex-wrap gap-4 items-center">
+                <div class="flex items-center space-x-2">
+                    <select id="selectionFilter" onchange="filterArticles()" class="p-2 border border-gray-300 rounded-md">
+                        <option value="">Todos</option>
+                        <option value="SEL:V">SEL:V (Seleccionados)</option>
+                        <option value="SEL:F">SEL:F (No seleccionados)</option>
+                    </select>
+                </div>
                 <div class="flex-1 min-w-64">
                     <input type="text" id="searchInput" placeholder="Buscar por título..." 
                            class="w-full p-2 border border-gray-300 rounded-md"
@@ -104,14 +111,19 @@
             <!-- Column Settings Panel -->
             <div id="columnSettings" class="hidden mb-4 p-4 bg-gray-50 rounded-lg">
                 <h3 class="font-semibold mb-3">Configurar Columnas Visibles:</h3>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-2 max-h-64 overflow-y-auto">
+                    <!-- Columnas principales -->
                     <label class="flex items-center">
                         <input type="checkbox" id="col-id" checked onchange="updateColumns()">
                         <span class="ml-2 text-sm">ID</span>
                     </label>
                     <label class="flex items-center">
-                        <input type="checkbox" id="col-titulo" checked onchange="updateColumns()">
-                        <span class="ml-2 text-sm">Título</span>
+                        <input type="checkbox" id="col-titulo_original" checked onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Título Original</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-titulo_espanol" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Título Español</span>
                     </label>
                     <label class="flex items-center">
                         <input type="checkbox" id="col-autor" onchange="updateColumns()">
@@ -122,16 +134,108 @@
                         <span class="ml-2 text-sm">Año</span>
                     </label>
                     <label class="flex items-center">
-                        <input type="checkbox" id="col-revista" onchange="updateColumns()">
+                        <input type="checkbox" id="col-nombre_revista" onchange="updateColumns()">
                         <span class="ml-2 text-sm">Revista</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-quartil_revista" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Quartil</span>
                     </label>
                     <label class="flex items-center">
                         <input type="checkbox" id="col-doi" checked onchange="updateColumns()">
                         <span class="ml-2 text-sm">DOI</span>
                     </label>
                     <label class="flex items-center">
+                        <input type="checkbox" id="col-base_datos" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Base de Datos</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-abstract" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Abstract</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-resumen" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Resumen</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-keywords_autor" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Keywords Autor</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-keywords_indexed" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Keywords Indexados</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-problema_articulo" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Problema</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-datos_estadisticos" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Datos Estadísticos</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-pregunta_investigacion" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Pregunta Investigación</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-objetivo_original" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Objetivo Original</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-objetivo_espanol" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Objetivo Español</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-objetivo_reescrito" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Objetivo Reescrito</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-justificacion" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Justificación</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-hipotesis" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Hipótesis</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-tipo_investigacion" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Tipo Investigación</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-estudios_previos" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Estudios Previos</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-poblacion_muestra_datos" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Población/Muestra</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-recoleccion_datos" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Recolección Datos</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-resultados" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Resultados</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-conclusiones" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Conclusiones</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-discusion" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Discusión</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-trabajos_futuros" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Trabajos Futuros</span>
+                    </label>
+                    <label class="flex items-center">
                         <input type="checkbox" id="col-enlace" checked onchange="updateColumns()">
                         <span class="ml-2 text-sm">Enlace</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-eid" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">EID</span>
                     </label>
                     <label class="flex items-center">
                         <input type="checkbox" id="col-seleccionado" checked onchange="updateColumns()">
