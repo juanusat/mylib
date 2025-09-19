@@ -244,14 +244,19 @@ class ExcelService:
 
 
 class DocumentService:
-    UPLOAD_FOLDER = 'uploads'
+    @staticmethod
+    def get_upload_folder():
+        current_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        return os.path.join(current_dir, 'uploads')
+    
     ALLOWED_EXTENSIONS = {'pdf'}
     MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
     
     @staticmethod
     def _create_upload_folder():
-        if not os.path.exists(DocumentService.UPLOAD_FOLDER):
-            os.makedirs(DocumentService.UPLOAD_FOLDER)
+        upload_folder = DocumentService.get_upload_folder()
+        if not os.path.exists(upload_folder):
+            os.makedirs(upload_folder, exist_ok=True)
     
     @staticmethod
     def _allowed_file(filename):
@@ -285,7 +290,8 @@ class DocumentService:
             DocumentService._create_upload_folder()
             
             unique_filename = DocumentService._generate_unique_filename(file.filename)
-            file_path = os.path.join(DocumentService.UPLOAD_FOLDER, unique_filename)
+            upload_folder = DocumentService.get_upload_folder()
+            file_path = os.path.join(upload_folder, unique_filename)
             file.save(file_path)
             
             existing_docs = ArticleDocument.get_by_article_id(article_id)
@@ -304,7 +310,8 @@ class DocumentService:
                 if doc_type == 'original':
                     old_file = existing_doc['nombre_archivo_original']
                     if old_file:
-                        old_path = os.path.join(DocumentService.UPLOAD_FOLDER, old_file)
+                        upload_folder = DocumentService.get_upload_folder()
+                        old_path = os.path.join(upload_folder, old_file)
                         if os.path.exists(old_path):
                             os.remove(old_path)
                     
@@ -314,7 +321,8 @@ class DocumentService:
                 elif doc_type == 'translated':
                     old_file = existing_doc['nombre_archivo_traducido']
                     if old_file:
-                        old_path = os.path.join(DocumentService.UPLOAD_FOLDER, old_file)
+                        upload_folder = DocumentService.get_upload_folder()
+                        old_path = os.path.join(upload_folder, old_file)
                         if os.path.exists(old_path):
                             os.remove(old_path)
                     
@@ -364,7 +372,8 @@ class DocumentService:
             if not filename_to_delete:
                 raise ValueError('No se encontró el documento a eliminar')
             
-            file_path = os.path.join(DocumentService.UPLOAD_FOLDER, filename_to_delete)
+            upload_folder = DocumentService.get_upload_folder()
+            file_path = os.path.join(upload_folder, filename_to_delete)
             if os.path.exists(file_path):
                 os.remove(file_path)
             
@@ -381,4 +390,5 @@ class DocumentService:
     
     @staticmethod
     def get_document_path(filename):
-        return os.path.join(DocumentService.UPLOAD_FOLDER, filename)
+        upload_folder = DocumentService.get_upload_folder()
+        return os.path.join(upload_folder, filename)

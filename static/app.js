@@ -286,11 +286,32 @@ function renderTableBody() {
         
         // Actions column (always visible)
         const isSelected = article.seleccionado ? 'checked' : '';
+        
+        // Botones de documentos
+        const originalDoc = getDocumentByType(article.documentos, 'original');
+        const translatedDoc = getDocumentByType(article.documentos, 'translated');
+        
+        const originalButton = originalDoc ? 
+            `<button onclick="viewDocument('${originalDoc.nombre_archivo_original}', event)" 
+                     class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs mr-1" 
+                     title="Ver documento original">
+                <i class="fas fa-file-pdf"></i> Leer
+            </button>` : '';
+            
+        const translatedButton = translatedDoc ? 
+            `<button onclick="viewDocument('${translatedDoc.nombre_archivo_traducido}', event)" 
+                     class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs mr-1" 
+                     title="Ver documento en español">
+                <i class="fas fa-file-pdf"></i> VE
+            </button>` : '';
+        
         cells.push(`<td class="border border-gray-300 px-4 py-2 text-center">
-            <div class="flex items-center justify-center space-x-2">
+            <div class="flex items-center justify-center space-x-1 flex-wrap">
                 <input type="checkbox" ${isSelected} onchange="toggleSelection(${article.id})" 
                        class="mr-2" title="Marcar como seleccionado">
-                <button onclick="editArticle(${article.id})" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm">
+                ${originalButton}
+                ${translatedButton}
+                <button onclick="editArticle(${article.id})" class="bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs">
                     <i class="fas fa-edit"></i> Editar
                 </button>
             </div>
@@ -590,6 +611,9 @@ async function editArticle(id) {
         // Configure readonly fields
         configureReadonlyFields();
         
+        // Render document sections
+        renderDocumentSections(article);
+        
         // Show modal and prevent body scroll
         document.getElementById('editModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
@@ -878,4 +902,340 @@ function downloadExcelFile(blob, baseName) {
 function exportExcel() {
     // Mantener compatibilidad con la función original por si se llama desde algún lugar
     exportExcelAll();
+}
+
+// ================== GESTIÓN DE DOCUMENTOS ==================
+function viewDocument(filename, event) {
+    if (!filename) {
+        showMessage('No se encontró el archivo para visualizar', 'error');
+        return;
+    }
+    
+    const url = `/api/documents/${filename}`;
+    
+    if (event && (event.ctrlKey || event.metaKey)) {
+        window.open(url, '_blank');
+        return;
+    }
+    
+    openDocumentSidebar(url, filename);
+}
+function openDocumentSidebar(url, filename) {
+    let sidebar = document.getElementById('documentSidebar');
+    if (!sidebar) {
+        sidebar = createDocumentSidebar();
+    }
+    
+    const iframe = sidebar.querySelector('#documentIframe');
+    const titleElement = sidebar.querySelector('#documentTitle');
+    
+    iframe.src = url;
+    titleElement.textContent = filename;
+    
+    sidebar.classList.remove('hidden');
+    sidebar.classList.add('flex');
+    document.body.classList.add('sidebar-open');
+}
+
+function createDocumentSidebar() {
+    const sidebar = document.createElement('div');
+    sidebar.id = 'documentSidebar';
+    sidebar.className = 'fixed top-0 right-0 h-full w-1/2 bg-white shadow-2xl z-50 hidden flex-col border-l border-gray-300';
+    
+    sidebar.innerHTML = `
+        <div class="flex items-center justify-between p-4 border-b bg-gray-50">
+            <div class="flex items-center space-x-2 flex-1 min-w-0">
+                <i class="fas fa-file-pdf text-red-500"></i>
+                <span id="documentTitle" class="font-medium text-gray-800 truncate"></span>
+            </div>
+            <div class="flex space-x-2 ml-2">
+                <button onclick="openInNewTab()" 
+                        class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm" 
+                        title="Abrir en nueva pestaña">
+                    <i class="fas fa-external-link-alt"></i>
+                </button>
+                <button onclick="toggleFullscreen()" 
+                        class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-sm" 
+                        title="Pantalla completa">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button onclick="closeDocumentSidebar()" 
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-sm" 
+                        title="Cerrar (Esc)">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+        <div class="flex-1 relative">
+            <iframe id="documentIframe" 
+                    class="w-full h-full border-0" 
+                    src="">
+            </iframe>
+        </div>
+    `;
+    
+    document.body.appendChild(sidebar);
+    
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !sidebar.classList.contains('hidden')) {
+            closeDocumentSidebar();
+        }
+    });
+    
+    return sidebar;
+}
+
+function closeDocumentSidebar() {
+    const sidebar = document.getElementById('documentSidebar');
+    if (sidebar) {
+        sidebar.classList.add('hidden');
+        sidebar.classList.remove('flex');
+        document.body.classList.remove('sidebar-open');
+        
+        // Limpiar iframe
+        const iframe = sidebar.querySelector('#documentIframe');
+        if (iframe) {
+            iframe.src = '';
+        }
+    }
+}
+
+function openInNewTab() {
+    const iframe = document.querySelector('#documentIframe');
+    if (iframe && iframe.src) {
+        window.open(iframe.src, '_blank');
+    }
+}
+
+function toggleFullscreen() {
+    const sidebar = document.getElementById('documentSidebar');
+    if (!sidebar) return;
+    
+    const expandIcon = sidebar.querySelector('.fa-expand, .fa-compress');
+    
+    if (sidebar.classList.contains('w-1/2')) {
+        // Expandir a pantalla completa
+        sidebar.classList.remove('w-1/2');
+        sidebar.classList.add('w-full');
+        expandIcon.classList.remove('fa-expand');
+        expandIcon.classList.add('fa-compress');
+    } else {
+        // Reducir a la mitad
+        sidebar.classList.remove('w-full');
+        sidebar.classList.add('w-1/2');
+        expandIcon.classList.remove('fa-compress');
+        expandIcon.classList.add('fa-expand');
+    }
+}
+
+function getDocumentByType(documentos, type) {
+    if (!documentos || !Array.isArray(documentos)) return null;
+    
+    for (const doc of documentos) {
+        if (type === 'original' && doc.nombre_archivo_original) {
+            return doc;
+        } else if (type === 'translated' && doc.nombre_archivo_traducido) {
+            return doc;
+        }
+    }
+    return null;
+}
+
+function renderDocumentSections(article) {
+    renderDocumentSection('originalDocSection', article, 'original');
+    renderDocumentSection('translatedDocSection', article, 'translated');
+}
+
+function renderDocumentSection(sectionId, article, docType) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    
+    const documents = article.documentos || [];
+    const docRecord = getDocumentByType(documents, docType);
+    
+    const isOriginal = docType === 'original';
+    const filename = isOriginal ? 
+        (docRecord ? docRecord.nombre_archivo_original : null) :
+        (docRecord ? docRecord.nombre_archivo_traducido : null);
+    
+    const typeLabel = isOriginal ? 'original' : 'traducido';
+    const colorClass = isOriginal ? 'text-red-600' : 'text-blue-600';
+    const bgClass = isOriginal ? 'bg-red-50 border-red-200' : 'bg-blue-50 border-blue-200';
+    
+    if (filename) {
+        // Documento existe - mostrar nombre del archivo y botón de eliminar
+        section.innerHTML = `
+            <div class="space-y-2">
+                <div class="p-2 ${bgClass} border rounded-md">
+                    <div class="flex items-center justify-between">
+                        <div class="flex flex-col">
+                            <span class="text-sm ${colorClass} font-medium">
+                                <i class="fas fa-file-pdf"></i> Documento subido
+                            </span>
+                            <span class="text-xs text-gray-600 truncate" title="${filename}">
+                                ${filename}
+                            </span>
+                        </div>
+                        <button onclick="deleteDocument(${article.id}, '${docType}')" 
+                                class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs" 
+                                title="Eliminar documento">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </div>
+                <button onclick="showUploadForm('${sectionId}', ${article.id}, '${docType}')" 
+                        class="w-full bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm">
+                    <i class="fas fa-upload"></i> Reemplazar documento
+                </button>
+            </div>
+        `;
+    } else {
+        // No hay documento - mostrar botón de subir
+        section.innerHTML = `
+            <div class="text-center">
+                <div class="p-4 border-2 border-dashed border-gray-300 rounded-md">
+                    <i class="fas fa-cloud-upload-alt text-gray-400 text-2xl mb-2"></i>
+                    <p class="text-sm text-gray-500 mb-3">No hay documento ${typeLabel}</p>
+                    <button onclick="showUploadForm('${sectionId}', ${article.id}, '${docType}')" 
+                            class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded text-sm">
+                        <i class="fas fa-upload"></i> Subir documento
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+}
+
+function showUploadForm(sectionId, articleId, docType) {
+    const section = document.getElementById(sectionId);
+    if (!section) return;
+    
+    const typeLabel = docType === 'original' ? 'original' : 'en español';
+    
+    section.innerHTML = `
+        <div class="space-y-3">
+            <div class="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                <h6 class="font-medium text-blue-800 mb-2">Subir documento ${typeLabel}</h6>
+                <input type="file" 
+                       id="fileInput_${sectionId}" 
+                       accept=".pdf" 
+                       class="w-full p-2 border border-gray-300 rounded text-sm">
+                <p class="text-xs text-gray-600 mt-1">Solo archivos PDF, máximo 16MB</p>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="uploadDocument('${sectionId}', ${articleId}, '${docType}')" 
+                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm flex-1">
+                    <i class="fas fa-upload"></i> Subir
+                </button>
+                <button onclick="cancelUpload('${sectionId}', ${articleId}, '${docType}')" 
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm flex-1">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+async function uploadDocument(sectionId, articleId, docType) {
+    const fileInput = document.getElementById(`fileInput_${sectionId}`);
+    if (!fileInput || !fileInput.files[0]) {
+        showMessage('Por favor selecciona un archivo', 'error');
+        return;
+    }
+    
+    const file = fileInput.files[0];
+    
+    // Validaciones
+    if (file.type !== 'application/pdf') {
+        showMessage('Solo se permiten archivos PDF', 'error');
+        return;
+    }
+    
+    if (file.size > 16 * 1024 * 1024) { // 16MB
+        showMessage('El archivo es demasiado grande (máximo 16MB)', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('doc_type', docType);
+    
+    try {
+        showMessage('Subiendo documento...', 'info');
+        
+        const response = await fetch(`/api/articles/${articleId}/documents`, {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showMessage(result.message, 'success');
+            // Recargar el artículo para actualizar la información de documentos
+            await refreshArticleInModal(articleId);
+        } else {
+            throw new Error(result.error || 'Error al subir documento');
+        }
+        
+    } catch (error) {
+        console.error('Error uploading document:', error);
+        showMessage('Error al subir el documento: ' + error.message, 'error');
+    }
+}
+
+async function cancelUpload(sectionId, articleId, docType) {
+    // Recargar la sección de documentos
+    const response = await fetch(`/api/articles/${articleId}`);
+    const article = await response.json();
+    renderDocumentSection(sectionId, article, docType);
+}
+
+async function deleteDocument(articleId, docType) {
+    if (!confirm(`¿Estás seguro de que quieres eliminar el documento ${docType === 'original' ? 'original' : 'en español'}?`)) {
+        return;
+    }
+    
+    try {
+        showMessage('Eliminando documento...', 'info');
+        
+        const response = await fetch(`/api/articles/${articleId}/documents/${docType}`, {
+            method: 'DELETE'
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            showMessage(result.message, 'success');
+            await refreshArticleInModal(articleId);
+        } else {
+            throw new Error(result.error || 'Error al eliminar documento');
+        }
+        
+    } catch (error) {
+        console.error('Error deleting document:', error);
+        showMessage('Error al eliminar el documento: ' + error.message, 'error');
+    }
+}
+
+async function refreshArticleInModal(articleId) {
+    try {
+        const response = await fetch(`/api/articles/${articleId}`);
+        const article = await response.json();
+        
+        renderDocumentSections(article);
+        
+        const index = allArticles.findIndex(a => a.id === articleId);
+        if (index !== -1) {
+            allArticles[index] = article;
+            const filteredIndex = filteredArticles.findIndex(a => a.id === articleId);
+            if (filteredIndex !== -1) {
+                filteredArticles[filteredIndex] = article;
+            }
+            renderTable();
+        }
+        
+    } catch (error) {
+        console.error('Error refreshing article:', error);
+    }
 }

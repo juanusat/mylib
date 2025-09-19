@@ -1,3 +1,4 @@
+import os
 from flask import Blueprint, render_template, request, jsonify, send_file
 from app.models import Article, ColumnMetadata
 from app.services import CSVService, ExcelService, DocumentService
@@ -139,3 +140,19 @@ def delete_document(article_id, doc_type):
         return jsonify({'error': str(e)}), 400
     except Exception as e:
         return jsonify({'error': f'Error al eliminar documento: {str(e)}'}), 500
+
+@main_bp.route('/api/documents/<filename>')
+def view_document(filename):
+    try:
+        file_path = DocumentService.get_document_path(filename)
+        if not os.path.exists(file_path):
+            return jsonify({'error': 'Documento no encontrado'}), 404
+        
+        return send_file(
+            file_path,
+            mimetype='application/pdf',
+            as_attachment=False
+        )
+        
+    except Exception as e:
+        return jsonify({'error': f'Error al mostrar documento: {str(e)}'}), 500
