@@ -6,6 +6,23 @@
     <title>MyLib - Análisis de Artículos</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Custom modal styles for better scrolling */
+        .modal-overlay {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+        .modal-content {
+            min-height: min-content;
+            margin: 2rem auto;
+        }
+        /* Ensure modal can scroll on mobile */
+        @media (max-height: 640px) {
+            .modal-content {
+                margin: 1rem auto;
+            }
+        }
+    </style>
 </head>
 <body class="bg-gray-100">
     <div class="container mx-auto px-4 py-8">
@@ -31,7 +48,7 @@
         </div>
 
         <!-- Confirmation Modal -->
-        <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+        <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal-overlay">
             <div class="flex items-center justify-center min-h-screen p-4">
                 <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
                     <div class="p-6 border-b">
@@ -270,15 +287,15 @@
         </div>
 
         <!-- Edit Modal -->
-        <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-            <div class="flex items-start justify-center min-h-screen p-4 pt-16">
-                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+        <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal-overlay">
+            <div class="flex items-center justify-center min-h-screen p-4 py-8">
+                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full flex flex-col max-h-[calc(100vh-4rem)] modal-content">
                     <div class="p-6 border-b flex-shrink-0">
                         <h3 class="text-lg font-semibold">
                             <i class="fas fa-edit text-blue-600"></i> Editar Artículo
                         </h3>
                     </div>
-                    <div class="p-6 overflow-y-auto flex-1">
+                    <div class="p-6 overflow-y-auto flex-1 min-h-0">
                         <form id="editForm" class="space-y-4">
                             <input type="hidden" id="articleId">
                             

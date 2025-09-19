@@ -473,10 +473,12 @@ function showDuplicateConfirmation(data) {
     }
     
     modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
 }
 
 function closeConfirmModal() {
     document.getElementById('confirmModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
 }
 
 function proceedWithImport() {
@@ -588,7 +590,9 @@ async function editArticle(id) {
         // Configure readonly fields
         configureReadonlyFields();
         
+        // Show modal and prevent body scroll
         document.getElementById('editModal').classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
     } catch (error) {
         console.error('Error loading article:', error);
     }
@@ -729,6 +733,7 @@ function getFieldValue(fieldId) {
 
 function closeModal() {
     document.getElementById('editModal').classList.add('hidden');
+    document.body.style.overflow = 'auto';
 }
 
 function showMessage(message, type) {
