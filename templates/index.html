@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyLib - Análisis de Artículos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <div class="container mx-auto px-4 py-8">
+        <header class="mb-8">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                <i class="fas fa-book-open text-blue-600"></i> MyLib - Análisis de Artículos
+            </h1>
+            <p class="text-gray-600">Sistema de análisis y gestión de artículos de investigación</p>
+        </header>
+
+        <!-- Import Section -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold mb-4">
+                <i class="fas fa-upload text-green-600"></i> Importar CSV de Scopus
+            </h2>
+            <div class="flex items-center space-x-4">
+                <input type="file" id="csvFile" accept=".csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
+                <button onclick="importCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+                    <i class="fas fa-file-import"></i> Importar
+                </button>
+            </div>
+            <div id="importMessage" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Articles List -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold">
+                    <i class="fas fa-list text-purple-600"></i> Artículos
+                </h2>
+                <div class="flex space-x-2">
+                    <button onclick="toggleColumnSettings()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-cog"></i> Columnas
+                    </button>
+                    <button onclick="exportExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
+                        <i class="fas fa-file-excel"></i> Exportar Excel
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Search and Controls -->
+            <div class="mb-4 flex flex-wrap gap-4 items-center">
+                <div class="flex-1 min-w-64">
+                    <input type="text" id="searchInput" placeholder="Buscar por título..." 
+                           class="w-full p-2 border border-gray-300 rounded-md"
+                           onkeyup="filterArticles()">
+                </div>
+                <div class="flex items-center space-x-2">
+                    <label class="text-sm font-medium text-gray-700">Mostrar:</label>
+                    <select id="itemsPerPage" onchange="changeItemsPerPage()" class="p-2 border border-gray-300 rounded-md">
+                        <option value="10">10</option>
+                        <option value="25" selected>25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Column Settings Panel -->
+            <div id="columnSettings" class="hidden mb-4 p-4 bg-gray-50 rounded-lg">
+                <h3 class="font-semibold mb-3">Configurar Columnas Visibles:</h3>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-id" checked onchange="updateColumns()">
+                        <span class="ml-2 text-sm">ID</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-titulo" checked onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Título</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-autor" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Autor</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-anio" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Año</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-revista" onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Revista</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-doi" checked onchange="updateColumns()">
+                        <span class="ml-2 text-sm">DOI</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-enlace" checked onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Enlace</span>
+                    </label>
+                    <label class="flex items-center">
+                        <input type="checkbox" id="col-seleccionado" checked onchange="updateColumns()">
+                        <span class="ml-2 text-sm">Seleccionado</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Articles Table -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full table-auto border-collapse border border-gray-300">
+                    <thead class="bg-gray-100">
+                        <tr id="tableHeader">
+                            <!-- Headers will be populated by JavaScript -->
+                        </tr>
+                    </thead>
+                    <tbody id="articlesTable">
+                        <!-- Articles will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="mt-4 flex justify-between items-center">
+                <div class="text-sm text-gray-600" id="paginationInfo">
+                    <!-- Pagination info will be populated by JavaScript -->
+                </div>
+                <div class="flex space-x-2" id="paginationControls">
+                    <!-- Pagination controls will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Modal -->
+        <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="flex items-start justify-center min-h-screen p-4 pt-16">
+                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+                    <div class="p-6 border-b flex-shrink-0">
+                        <h3 class="text-lg font-semibold">
+                            <i class="fas fa-edit text-blue-600"></i> Editar Artículo
+                        </h3>
+                    </div>
+                    <div class="p-6 overflow-y-auto flex-1">
+                        <form id="editForm" class="space-y-4">
+                            <input type="hidden" id="articleId">
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Título Español</label>
+                                    <input type="text" id="titulo_espanol" class="w-full p-2 border border-gray-300 rounded-md">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de Investigación</label>
+                                    <input type="text" id="tipo_investigacion" class="w-full p-2 border border-gray-300 rounded-md">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Resumen</label>
+                                <textarea id="resumen" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Problema a Solucionar</label>
+                                <textarea id="problema_articulo" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Pregunta de Investigación</label>
+                                <textarea id="pregunta_investigacion" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Objetivo Español</label>
+                                    <textarea id="objetivo_espanol" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Objetivo Reescrito</label>
+                                    <textarea id="objetivo_reescrito" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Justificación</label>
+                                <textarea id="justificacion" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Hipótesis</label>
+                                <textarea id="hipotesis" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Resultados</label>
+                                <textarea id="resultados" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Conclusiones</label>
+                                <textarea id="conclusiones" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                            </div>
+
+                            <div class="flex items-center">
+                                <input type="checkbox" id="seleccionado" class="mr-2">
+                                <label for="seleccionado" class="text-sm font-medium text-gray-700">Seleccionado</label>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="p-6 border-t flex justify-end space-x-2 flex-shrink-0">
+                        <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                            Cancelar
+                        </button>
+                        <button onclick="saveArticle()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg">
+                            <i class="fas fa-save"></i> Guardar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>
