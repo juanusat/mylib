@@ -1067,8 +1067,8 @@ function renderDocumentSection(sectionId, article, docType) {
         section.innerHTML = `
             <div class="space-y-2">
                 <div class="p-2 ${bgClass} border rounded-md">
-                    <div class="flex items-center justify-between">
-                        <div class="flex flex-col">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="flex flex-col min-w-0 flex-1">
                             <span class="text-sm ${colorClass} font-medium">
                                 <i class="fas fa-file-pdf"></i> Documento subido
                             </span>
@@ -1077,7 +1077,7 @@ function renderDocumentSection(sectionId, article, docType) {
                             </span>
                         </div>
                         <button onclick="deleteDocument(${article.id}, '${docType}')" 
-                                class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs" 
+                                class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs flex-shrink-0" 
                                 title="Eliminar documento">
                             <i class="fas fa-trash"></i>
                         </button>
