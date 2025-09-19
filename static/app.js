@@ -784,5 +784,40 @@ async function toggleSelection(id) {
 }
 
 function exportExcel() {
-    showMessage('Función de exportación en desarrollo', 'info');
+    // Mostrar mensaje de procesamiento
+    showMessage('Generando archivo Excel...', 'info');
+    
+    fetch('/api/export-excel')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error en la exportación: ${response.status}`);
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            // Crear URL temporal para el blob
+            const url = window.URL.createObjectURL(blob);
+            
+            // Crear elemento de descarga temporal
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            // Extraer nombre del archivo desde la respuesta o generar uno
+            const timestamp = new Date().toISOString().slice(0, 19).replace('T', '--').replace(/:/g, '-');
+            a.download = `matriz-analisis-${timestamp}.xlsx`;
+            
+            document.body.appendChild(a);
+            a.click();
+            
+            // Limpiar
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+            
+            showMessage('Archivo Excel exportado exitosamente', 'success');
+        })
+        .catch(error => {
+            console.error('Error al exportar Excel:', error);
+            showMessage('Error al exportar el archivo Excel', 'error');
+        });
 }

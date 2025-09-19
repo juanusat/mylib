@@ -5,6 +5,9 @@ import io
 from datetime import datetime
 import os
 from dotenv import load_dotenv
+from openpyxl import Workbook
+from openpyxl.styles import Font, PatternFill, Alignment
+import tempfile
 
 load_dotenv()
 
@@ -285,6 +288,114 @@ def import_csv():
         message += f', {skipped_count} omitidos (ya existían)'
     
     return jsonify({'message': message})
+
+@app.route('/api/export-excel', methods=['GET'])
+def export_excel():
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        
+        # Obtener todos los artículos con sus datos completos
+        cur.execute('SELECT * FROM articulos ORDER BY id DESC')
+        articles = cur.fetchall()
+        cur.close()
+        conn.close()
+        
+        # Crear el workbook de Excel
+        wb = Workbook()
+        ws = wb.active
+        ws.title = "Análisis de Artículos"
+        
+        # Definir headers con nombres descriptivos
+        headers = [
+            'ID', 'Autor', 'Nombre Revista', 'Quartil Revista', 'Año', 'DOI',
+            'Título Original', 'Título Español', 'Base de Datos', 'Abstract', 'Resumen',
+            'Keywords Autor', 'Keywords Indexados', 'Problema Artículo', 'Datos Estadísticos',
+            'Pregunta Investigación', 'Objetivo Original', 'Objetivo Español', 
+            'Objetivo Reescrito', 'Justificación', 'Hipótesis', 'Tipo Investigación',
+            'Estudios Previos', 'Población/Muestra/Datos', 'Recolección Datos',
+            'Resultados', 'Conclusiones', 'Discusión', 'Trabajos Futuros',
+            'Enlace', 'EID', 'Seleccionado'
+        ]
+        
+        # Estilo para headers
+        header_font = Font(bold=True, color='FFFFFF')
+        header_fill = PatternFill(start_color='366092', end_color='366092', fill_type='solid')
+        header_alignment = Alignment(horizontal='center', vertical='center', wrap_text=True)
+        
+        # Escribir headers
+        for col, header in enumerate(headers, 1):
+            cell = ws.cell(row=1, column=col, value=header)
+            cell.font = header_font
+            cell.fill = header_fill
+            cell.alignment = header_alignment
+        
+        # Escribir datos
+        for row_idx, article in enumerate(articles, 2):
+            for col_idx, value in enumerate(article, 1):
+                cell = ws.cell(row=row_idx, column=col_idx, value=value)
+                # Ajustar texto para campos largos
+                if col_idx in [7, 8, 10, 11]:  # Títulos, abstract, resumen
+                    cell.alignment = Alignment(wrap_text=True, vertical='top')
+        
+        # Ajustar ancho de columnas
+        column_widths = {
+            1: 8,   # ID
+            2: 25,  # Autor
+            3: 20,  # Revista
+            4: 10,  # Quartil
+            5: 8,   # Año
+            6: 15,  # DOI
+            7: 30,  # Título Original
+            8: 30,  # Título Español
+            9: 12,  # Base de Datos
+            10: 40, # Abstract
+            11: 40, # Resumen
+            12: 20, # Keywords Autor
+            13: 20, # Keywords Indexados
+            14: 25, # Problema
+            15: 20, # Datos Estadísticos
+            16: 25, # Pregunta Investigación
+            17: 25, # Objetivo Original
+            18: 25, # Objetivo Español
+            19: 25, # Objetivo Reescrito
+            20: 25, # Justificación
+            21: 20, # Hipótesis
+            22: 18, # Tipo Investigación
+            23: 25, # Estudios Previos
+            24: 25, # Población/Muestra
+            25: 25, # Recolección Datos
+            26: 30, # Resultados
+            27: 30, # Conclusiones
+            28: 30, # Discusión
+            29: 25, # Trabajos Futuros
+            30: 25, # Enlace
+            31: 15, # EID
+            32: 12  # Seleccionado
+        }
+        
+        for col, width in column_widths.items():
+            ws.column_dimensions[ws.cell(row=1, column=col).column_letter].width = width
+        
+        # Crear nombre del archivo con timestamp
+        timestamp = datetime.now().strftime('%Y-%m-%d--%H-%M-%S')
+        filename = f'matriz-analisis-{timestamp}.xlsx'
+        
+        # Crear archivo temporal
+        temp_file = tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx')
+        wb.save(temp_file.name)
+        temp_file.close()
+        
+        # Retornar archivo para descarga
+        return send_file(
+            temp_file.name,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        
+    except Exception as e:
+        return jsonify({'error': f'Error al exportar Excel: {str(e)}'}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4350, debug=True)
