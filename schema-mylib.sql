@@ -1,6 +1,6 @@
 CREATE TABLE articulos (
     id SERIAL PRIMARY KEY,
-    autor varchar(1000),
+    autor varchar(2000),
     nombre_revista varchar(500),
     quartil_revista varchar(50),
     anio INTEGER,
