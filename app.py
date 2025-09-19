@@ -125,8 +125,8 @@ def update_article(article_id):
     
     return jsonify({'message': 'Article updated successfully'})
 
-@app.route('/api/import-csv', methods=['POST'])
-def import_csv():
+@app.route('/api/check-csv', methods=['POST'])
+def check_csv():
     if 'file' not in request.files:
         return jsonify({'error': 'No file provided'}), 400
     
@@ -141,8 +141,74 @@ def import_csv():
     stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
     csv_reader = csv.DictReader(stream)
     
-    imported_count = 0
+    dois_in_csv = []
+    existing_articles = []
+    new_articles = []
+    
     for row in csv_reader:
+        doi = row.get('DOI', '').strip()
+        if doi:
+            dois_in_csv.append(doi)
+    
+    if dois_in_csv:
+        # Check which DOIs already exist
+        format_strings = ','.join(['%s'] * len(dois_in_csv))
+        cur.execute(f'SELECT doi, titulo_original FROM articulos WHERE doi IN ({format_strings})', dois_in_csv)
+        existing_results = cur.fetchall()
+        
+        existing_dois = {row[0]: row[1] for row in existing_results}
+        
+        for doi in dois_in_csv:
+            if doi in existing_dois:
+                existing_articles.append({
+                    'doi': doi,
+                    'titulo': existing_dois[doi]
+                })
+            else:
+                new_articles.append({'doi': doi})
+    
+    cur.close()
+    conn.close()
+    
+    return jsonify({
+        'total_in_csv': len(dois_in_csv),
+        'existing_count': len(existing_articles),
+        'new_count': len(new_articles),
+        'existing_articles': existing_articles,
+        'has_duplicates': len(existing_articles) > 0
+    })
+
+@app.route('/api/import-csv', methods=['POST'])
+def import_csv():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file provided'}), 400
+    
+    file = request.files['file']
+    if not file.filename.endswith('.csv'):
+        return jsonify({'error': 'Invalid file format'}), 400
+    
+    force_import = request.form.get('force_import', 'false').lower() == 'true'
+    
+    conn = get_db_connection()
+    cur = conn.cursor()
+    
+    # Read CSV
+    stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+    csv_reader = csv.DictReader(stream)
+    
+    imported_count = 0
+    skipped_count = 0
+    
+    for row in csv_reader:
+        doi = row.get('DOI', '').strip()
+        
+        # Check if article already exists (only if not forcing import)
+        if not force_import and doi:
+            cur.execute('SELECT id FROM articulos WHERE doi = %s', (doi,))
+            if cur.fetchone():
+                skipped_count += 1
+                continue
+        
         try:
             cur.execute('''
                 INSERT INTO articulos (
@@ -153,7 +219,7 @@ def import_csv():
                 row.get('Authors', ''),
                 row.get('Source title', ''),
                 int(row.get('Year', 0)) if row.get('Year') else None,
-                row.get('DOI', ''),
+                doi,
                 row.get('Title', ''),
                 'Scopus',
                 row.get('Abstract', ''),
@@ -170,7 +236,11 @@ def import_csv():
     cur.close()
     conn.close()
     
-    return jsonify({'message': f'{imported_count} articles imported successfully'})
+    message = f'{imported_count} artículos importados'
+    if skipped_count > 0:
+        message += f', {skipped_count} omitidos (ya existían)'
+    
+    return jsonify({'message': message})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=4350, debug=True)

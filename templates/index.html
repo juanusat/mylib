@@ -23,11 +23,48 @@
             </h2>
             <div class="flex items-center space-x-4">
                 <input type="file" id="csvFile" accept=".csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
-                <button onclick="importCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
-                    <i class="fas fa-file-import"></i> Importar
+                <button onclick="checkCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
+                    <i class="fas fa-file-import"></i> Verificar e Importar
                 </button>
             </div>
             <div id="importMessage" class="mt-4 hidden"></div>
+        </div>
+
+        <!-- Confirmation Modal -->
+        <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
+                    <div class="p-6 border-b">
+                        <h3 class="text-lg font-semibold text-orange-600">
+                            <i class="fas fa-exclamation-triangle"></i> Artículos Duplicados Detectados
+                        </h3>
+                    </div>
+                    <div class="p-6 overflow-y-auto">
+                        <div id="duplicateInfo" class="space-y-4">
+                            <!-- Duplicate info will be populated here -->
+                        </div>
+                        <div class="mt-6 p-4 bg-gray-50 rounded">
+                            <h4 class="font-semibold mb-2">Resumen:</h4>
+                            <ul class="space-y-1 text-sm">
+                                <li><span class="font-medium">Total en CSV:</span> <span id="totalCount">0</span></li>
+                                <li><span class="font-medium text-orange-600">Ya registrados:</span> <span id="existingCount">0</span></li>
+                                <li><span class="font-medium text-green-600">Nuevos a importar:</span> <span id="newCount">0</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="p-6 border-t flex justify-end space-x-2">
+                        <button onclick="closeConfirmModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                            Cancelar
+                        </button>
+                        <button onclick="proceedWithImport()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg">
+                            <i class="fas fa-upload"></i> Importar Solo Nuevos
+                        </button>
+                        <button onclick="forceImport()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">
+                            <i class="fas fa-exclamation-triangle"></i> Forzar Importación
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Articles List -->

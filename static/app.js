@@ -190,9 +190,8 @@ function updateColumns() {
     renderTable();
 }
 
-async function importCSV() {
+async function checkCSV() {
     const fileInput = document.getElementById('csvFile');
-    const messageDiv = document.getElementById('importMessage');
     
     if (!fileInput.files[0]) {
         showMessage('Por favor selecciona un archivo CSV', 'error');
@@ -201,6 +200,89 @@ async function importCSV() {
 
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
+
+    try {
+        const response = await fetch('/api/check-csv', {
+            method: 'POST',
+            body: formData
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+            if (result.has_duplicates) {
+                showDuplicateConfirmation(result);
+            } else {
+                // No duplicates, proceed with import
+                importCSV(false);
+            }
+        } else {
+            showMessage(result.error, 'error');
+        }
+    } catch (error) {
+        showMessage('Error al verificar el archivo', 'error');
+        console.error('Error:', error);
+    }
+}
+
+function showDuplicateConfirmation(data) {
+    const modal = document.getElementById('confirmModal');
+    const duplicateInfo = document.getElementById('duplicateInfo');
+    
+    // Update counts
+    document.getElementById('totalCount').textContent = data.total_in_csv;
+    document.getElementById('existingCount').textContent = data.existing_count;
+    document.getElementById('newCount').textContent = data.new_count;
+    
+    // Show existing articles
+    if (data.existing_articles.length > 0) {
+        const existingList = data.existing_articles.map(article => 
+            `<div class="border-l-4 border-orange-400 pl-3 py-2">
+                <p class="font-medium text-sm">${article.titulo || 'Sin título'}</p>
+                <p class="text-xs text-gray-600">DOI: ${article.doi}</p>
+            </div>`
+        ).join('');
+        
+        duplicateInfo.innerHTML = `
+            <div>
+                <h4 class="font-semibold text-orange-600 mb-3">Artículos ya registrados (${data.existing_count}):</h4>
+                <div class="space-y-2 max-h-40 overflow-y-auto">
+                    ${existingList}
+                </div>
+            </div>
+        `;
+    }
+    
+    modal.classList.remove('hidden');
+}
+
+function closeConfirmModal() {
+    document.getElementById('confirmModal').classList.add('hidden');
+}
+
+function proceedWithImport() {
+    closeConfirmModal();
+    importCSV(false);
+}
+
+function forceImport() {
+    closeConfirmModal();
+    importCSV(true);
+}
+
+async function importCSV(forceImport = false) {
+    const fileInput = document.getElementById('csvFile');
+    
+    if (!fileInput.files[0]) {
+        showMessage('Por favor selecciona un archivo CSV', 'error');
+        return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+    if (forceImport) {
+        formData.append('force_import', 'true');
+    }
 
     try {
         const response = await fetch('/api/import-csv', {
@@ -213,6 +295,8 @@ async function importCSV() {
         if (response.ok) {
             showMessage(result.message, 'success');
             loadArticles();
+            // Clear file input
+            fileInput.value = '';
         } else {
             showMessage(result.error, 'error');
         }
