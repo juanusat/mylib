@@ -783,9 +783,27 @@ async function toggleSelection(id) {
     }
 }
 
-function exportExcel() {
+function toggleExportDropdown() {
+    const dropdown = document.getElementById('exportDropdown');
+    dropdown.classList.toggle('hidden');
+}
+
+// Cerrar dropdown cuando se hace clic fuera
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('exportDropdown');
+    const button = document.getElementById('exportButton');
+    
+    if (dropdown && button && !dropdown.contains(event.target) && !button.contains(event.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
+
+function exportExcelAll() {
+    // Cerrar dropdown
+    document.getElementById('exportDropdown').classList.add('hidden');
+    
     // Mostrar mensaje de procesamiento
-    showMessage('Generando archivo Excel...', 'info');
+    showMessage('Generando archivo Excel con todos los artículos...', 'info');
     
     fetch('/api/export-excel')
         .then(response => {
@@ -795,29 +813,61 @@ function exportExcel() {
             return response.blob();
         })
         .then(blob => {
-            // Crear URL temporal para el blob
-            const url = window.URL.createObjectURL(blob);
-            
-            // Crear elemento de descarga temporal
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            
-            // Extraer nombre del archivo desde la respuesta o generar uno
-            const timestamp = new Date().toISOString().slice(0, 19).replace('T', '--').replace(/:/g, '-');
-            a.download = `matriz-analisis-${timestamp}.xlsx`;
-            
-            document.body.appendChild(a);
-            a.click();
-            
-            // Limpiar
-            window.URL.revokeObjectURL(url);
-            document.body.removeChild(a);
-            
-            showMessage('Archivo Excel exportado exitosamente', 'success');
+            downloadExcelFile(blob, 'matriz-analisis-completa');
+            showMessage('Archivo Excel exportado exitosamente (todos los artículos)', 'success');
         })
         .catch(error => {
             console.error('Error al exportar Excel:', error);
             showMessage('Error al exportar el archivo Excel', 'error');
         });
+}
+
+function exportExcelBookmarks() {
+    // Cerrar dropdown
+    document.getElementById('exportDropdown').classList.add('hidden');
+    
+    // Mostrar mensaje de procesamiento
+    showMessage('Generando archivo Excel con marcadores...', 'info');
+    
+    fetch('/api/export-excel-bookmarks')
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error en la exportación: ${response.status}`);
+            }
+            return response.blob();
+        })
+        .then(blob => {
+            downloadExcelFile(blob, 'matriz-analisis-marcadores');
+            showMessage('Archivo Excel exportado exitosamente (solo marcadores)', 'success');
+        })
+        .catch(error => {
+            console.error('Error al exportar Excel de marcadores:', error);
+            showMessage('Error al exportar el archivo Excel de marcadores', 'error');
+        });
+}
+
+function downloadExcelFile(blob, baseName) {
+    // Crear URL temporal para el blob
+    const url = window.URL.createObjectURL(blob);
+    
+    // Crear elemento de descarga temporal
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = url;
+    
+    // Generar nombre del archivo con timestamp
+    const timestamp = new Date().toISOString().slice(0, 19).replace('T', '--').replace(/:/g, '-');
+    a.download = `${baseName}-${timestamp}.xlsx`;
+    
+    document.body.appendChild(a);
+    a.click();
+    
+    // Limpiar
+    window.URL.revokeObjectURL(url);
+    document.body.removeChild(a);
+}
+
+function exportExcel() {
+    // Mantener compatibilidad con la función original por si se llama desde algún lugar
+    exportExcelAll();
 }

@@ -39,6 +39,11 @@
                 max-height: calc(95vh - 140px);
             }
         }
+        
+        /* Dropdown styles */
+        .dropdown-active {
+            display: block !important;
+        }
     </style>
 </head>
 <body class="bg-gray-100">
@@ -58,8 +63,7 @@
             <div class="flex items-center space-x-4">
                 <input type="file" id="csvFile" accept=".csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 <button onclick="checkCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg">
-                    <i class="fas fa-file-import"></i> Verificar e Importar
-                </button>
+                    <i class="fas fa-file-import"></i>Importar</button>
             </div>
             <div id="importMessage" class="mt-4 hidden"></div>
         </div>
@@ -111,9 +115,31 @@
                     <button onclick="toggleColumnSettings()" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg">
                         <i class="fas fa-cog"></i> Columnas
                     </button>
-                    <button onclick="exportExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg">
-                        <i class="fas fa-file-excel"></i> Exportar Excel
-                    </button>
+                    <!-- Dropdown para exportar Excel -->
+                    <div class="relative inline-block text-left">
+                        <button onclick="toggleExportDropdown()" 
+                                class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center space-x-1"
+                                id="exportButton">
+                            <i class="fas fa-file-excel"></i>
+                            <span>Exportar Excel</span>
+                            <i class="fas fa-chevron-down text-xs"></i>
+                        </button>
+                        <div id="exportDropdown" 
+                             class="absolute right-0 mt-2 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-10 hidden">
+                            <div class="py-1">
+                                <button onclick="exportExcelAll()" 
+                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                    <i class="fas fa-file-excel text-green-600"></i>
+                                    <span>Descargar Todo</span>
+                                </button>
+                                <button onclick="exportExcelBookmarks()" 
+                                        class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 flex items-center space-x-2">
+                                    <i class="fas fa-bookmark text-blue-600"></i>
+                                    <span>Descargar Marcadores</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             

@@ -90,3 +90,18 @@ def export_excel():
         
     except Exception as e:
         return jsonify({'error': f'Error al exportar Excel: {str(e)}'}), 500
+
+@main_bp.route('/api/export-excel-bookmarks', methods=['GET'])
+def export_excel_bookmarks():
+    try:
+        temp_file_path, filename = ExcelService.create_excel_export_bookmarks()
+        
+        return send_file(
+            temp_file_path,
+            as_attachment=True,
+            download_name=filename,
+            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        )
+        
+    except Exception as e:
+        return jsonify({'error': f'Error al exportar Excel de marcadores: {str(e)}'}), 500

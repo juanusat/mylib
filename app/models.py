@@ -8,6 +8,11 @@ class Article:
         return DatabaseManager.execute_query(query, fetch_all=True)
     
     @staticmethod
+    def get_bookmarks():
+        query = 'SELECT * FROM articulos WHERE seleccionado = true ORDER BY id DESC'
+        return DatabaseManager.execute_query(query, fetch_all=True)
+    
+    @staticmethod
     def get_by_id(article_id):
         query = 'SELECT * FROM articulos WHERE id = %s'
         return DatabaseManager.execute_query(query, (article_id,), fetch_one=True)
