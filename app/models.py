@@ -280,7 +280,30 @@ class ColumnMetadata:
             WHERE id_from_backup IS NOT NULL AND id_from_backup != ''
         '''
         rows = DatabaseManager.execute_query(query, fetch_all=True)
-        return [row[0] for row in rows] if rows else []
+        
+        # Map friendly names to database column names
+        friendly_to_db_mapping = {
+            'Autor(es)': 'autor',
+            'Nombre Revista': 'nombre_revista',
+            'Fecha': 'anio',
+            'DOI': 'doi',
+            'Título': 'titulo_original',
+            'Abstract': 'abstract',
+            'Keyswords author': 'keywords_autor',
+            'Keyswords indexed': 'keywords_indexed',
+            'Enlace': 'enlace',
+            'EID': 'eid'
+        }
+        
+        readonly_fields = []
+        if rows:
+            for row in rows:
+                friendly_name = row[0]
+                db_column_name = friendly_to_db_mapping.get(friendly_name)
+                if db_column_name:
+                    readonly_fields.append(db_column_name)
+        
+        return readonly_fields
     
     @staticmethod
     def get_all_metadata():

@@ -41,7 +41,7 @@ export function renderTableHeader() {
         { key: 'trabajos_futuros', label: 'Trabajos Futuros', visible: visibleColumns.trabajos_futuros },
         { key: 'enlace', label: 'Enlace', visible: visibleColumns.enlace },
         { key: 'eid', label: 'EID', visible: visibleColumns.eid },
-        { key: 'seleccionado', label: 'Seleccionado', visible: visibleColumns.seleccionado },
+        { key: 'seleccionado', label: 'Sel.', visible: visibleColumns.seleccionado },
         { key: 'acciones', label: 'Acciones', visible: true }
     ];
 

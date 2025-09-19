@@ -75,8 +75,8 @@ export async function openInstructionsModal() {
         document.getElementById('instructionsModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     } catch (error) {
-        console.error('Error loading instructions:', error);
-        showMessage('Error al generar las instrucciones', 'error');
+        console.error('Error in openInstructionsModal:', error);
+        showMessage('Error al generar las instrucciones: ' + error.message, 'error');
     }
 }
 
@@ -87,6 +87,12 @@ export function generateInstructionsPrompt() {
 Por favor, complete los siguientes campos basándose en la lectura cuidadosa del artículo científico. Para cada campo, siga las instrucciones específicas proporcionadas:
 ---
 `;
+
+    // Check if columnMetadata is available
+    if (!columnMetadata || !Array.isArray(columnMetadata) || columnMetadata.length === 0) {
+        prompt += `\nNo se pudieron cargar los metadatos de las columnas. Por favor, recargue la página e intente nuevamente.\n`;
+        return prompt;
+    }
 
     // Group fields by categories for better organization
     const categories = {
@@ -100,18 +106,18 @@ Por favor, complete los siguientes campos basándose en la lectura cuidadosa del
     for (const [categoryName, columnNumbers] of Object.entries(categories)) {
         prompt += `\n## ${categoryName}\n`;
         
-        const categoryColumns = columnMetadata.filter(col => columnNumbers.includes(col.numero_columna));
+        const categoryColumns = columnMetadata.filter(col => columnNumbers.includes(col.nro_columna));
         
         for (const column of categoryColumns) {
-            prompt += `\n### ${column.numero_columna}. ${column.nombre_campo}\n`;
-            if (column.descripcion) {
-                prompt += `**Descripción:** ${column.descripcion}\n`;
+            prompt += `\n### ${column.nro_columna}. ${column.columna}\n`;
+            if (column.explicacion) {
+                prompt += `**Descripción:** ${column.explicacion}\n`;
             }
-            if (column.instrucciones) {
-                prompt += `**Instrucciones:** ${column.instrucciones}\n`;
+            if (column.formato) {
+                prompt += `**Formato:** ${column.formato}\n`;
             }
-            if (column.ejemplo) {
-                prompt += `**Ejemplo:** ${column.ejemplo}\n`;
+            if (column.dato_fijo) {
+                prompt += `**Dato fijo:** ${column.dato_fijo}\n`;
             }
             prompt += `**Respuesta:** [COMPLETE AQUÍ]\n`;
         }
@@ -178,7 +184,8 @@ export function closeInstructionsModal() {
 export async function loadColumnMetadata() {
     try {
         const response = await fetch('/api/column-metadata');
-        const metadata = await response.json();
+        const data = await response.json();
+        const metadata = data.metadata || data;
         setColumnMetadata(metadata);
         return metadata;
     } catch (error) {
