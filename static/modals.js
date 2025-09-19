@@ -97,8 +97,11 @@ export function generateInstructionsPrompt() {
     const currentDate = new Date().toLocaleDateString('es-ES');
     
     let prompt = `# INSTRUCCIONES PARA ANÁLISIS DE ARTÍCULO CIENTÍFICO
-Por favor, complete los siguientes campos basándose en la lectura cuidadosa del artículo científico. Para cada campo, siga las instrucciones específicas proporcionadas:
+
+Por favor, complete los siguientes campos basándose en la lectura cuidadosa del artículo científico. Los campos están listados en formato YAML para facilitar la comprensión y completado.
+
 ---
+
 `;
 
     // Check if columnMetadata is available
@@ -107,43 +110,64 @@ Por favor, complete los siguientes campos basándose en la lectura cuidadosa del
         return prompt;
     }
 
-    // Group fields by categories for better organization
-    const categories = {
-        'Información Básica': [1, 2, 3, 4, 5, 6, 7, 8, 29, 30, 31],
-        'Contenido y Palabras Clave': [9, 10, 11, 12],
-        'Problema e Investigación': [13, 14, 15, 16, 17, 18, 19, 20, 21],
-        'Metodología': [22, 23, 24],
-        'Resultados y Análisis': [25, 26, 27, 28]
-    };
-
-    for (const [categoryName, columnNumbers] of Object.entries(categories)) {
-        prompt += `\n## ${categoryName}\n`;
-        
-        const categoryColumns = columnMetadata.filter(col => columnNumbers.includes(col.nro_columna));
-        
-        for (const column of categoryColumns) {
-            prompt += `\n### ${column.nro_columna}. ${column.columna}\n`;
-            if (column.explicacion) {
-                prompt += `**Descripción:** ${column.explicacion}\n`;
-            }
-            if (column.formato) {
-                prompt += `**Formato:** ${column.formato}\n`;
-            }
-            if (column.dato_fijo) {
-                prompt += `**Dato fijo:** ${column.dato_fijo}\n`;
-            }
-            prompt += `**Respuesta:** [COMPLETE AQUÍ]\n`;
+    const fieldsToComplete = columnMetadata.filter(col => {
+        // Excluir campos que tienen valor en id_from_backup (importados del CSV)
+        if (col.id_from_backup && col.id_from_backup.trim() !== '') {
+            return false;
         }
+        
+        // Excluir campos que tienen datos fijos
+        if (col.dato_fijo && col.dato_fijo.trim() !== '') {
+            return false;
+        }
+        
+        return true;
+    });
+
+    // Generate YAML format
+    prompt += `\`\`\`yaml
+# CAMPOS A COMPLETAR
+campos_analisis:
+`;
+
+    for (const column of fieldsToComplete) {
+        prompt += `  - campo: "${column.columna}"\n`;
+        prompt += `    numero: ${column.nro_columna}\n`;
+        if (column.explicacion) {
+            prompt += `    descripcion: "${column.explicacion}"\n`;
+        }
+        if (column.formato) {
+            prompt += `    formato: "${column.formato}"\n`;
+        }
+        prompt += `\n`;
     }
-    
-    prompt += `\n---
-**Fecha de análisis:** ${currentDate}
-**Instrucciones generales:**
-- Lea el artículo completo antes de comenzar
-- Sea preciso y específico en sus respuestas
-- Si alguna información no está disponible, indique "No especificado" o "No disponible"
-- Mantenga la objetividad y base sus respuestas únicamente en el contenido del artículo
-- Para campos de traducción, mantenga el sentido original pero use español claro y académico`;
+
+    prompt += `\`\`\`
+
+---
+
+## INSTRUCCIONES GENERALES:
+
+1. **Lectura completa**: Lea todo el artículo antes de comenzar el análisis
+2. **Precisión**: Sea específico y preciso en sus respuestas
+3. **Información faltante**: Si alguna información no está disponible, indique "No especificado" o "No disponible"
+4. **Objetividad**: Base sus respuestas únicamente en el contenido del artículo
+5. **Traducciones**: Para campos de traducción, mantenga el sentido original pero use español claro y académico
+6. **Realismo**: Se penaliza si completa información que el documento no mencione, es preferible indicar que no hay información al respecto en vez de inventarla.
+7. **Redacción**: Use un lenguaje claro, conciso y académico, evitando jergas o coloquialismos.
+
+## FORMATO DE RESPUESTA:
+
+Para cada campo listado arriba, proporcione su respuesta en el siguiente formato:
+
+**Nombre del campo:** [nombre_exacto_del_campo]
+
+\`\`\`
+[Su respuesta aquí]
+\`\`\`
+
+---
+`;
 
     return prompt;
 }
@@ -230,9 +254,9 @@ export function closeInstructionsModal() {
 
 export async function loadColumnMetadata() {
     try {
-        const response = await fetch('/api/column-metadata');
+        const response = await fetch('/api/field-metadata');
         const data = await response.json();
-        const metadata = data.metadata || data;
+        const metadata = data.columns || data;
         setColumnMetadata(metadata);
         return metadata;
     } catch (error) {
