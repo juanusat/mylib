@@ -96,13 +96,13 @@ class CSVService:
 class ExcelService:
     # Configuración común para todas las exportaciones
     HEADERS = [
-        'ID', 'Autor', 'Nombre Revista', 'Quartil Revista', 'Año', 'DOI',
-        'Título Original', 'Título Español', 'Base de Datos', 'Abstract', 'Resumen',
-        'Keywords Autor', 'Keywords Indexados', 'Problema Artículo', 'Datos Estadísticos',
-        'Pregunta Investigación', 'Objetivo Original', 'Objetivo Español', 
-        'Objetivo Reescrito', 'Justificación', 'Hipótesis', 'Tipo Investigación',
-        'Estudios Previos', 'Población/Muestra/Datos', 'Recolección Datos',
-        'Resultados', 'Conclusiones', 'Discusión', 'Trabajos Futuros',
+        'ID', 'Autor', 'Nombre revista', 'Quartil revista', 'Fecha', 'DOI',
+        'Título (original)', 'Título (español)', 'Base de datos', 'Abstract', 'Resumen',
+        'Keywords autor', 'Keywords indexados', 'Problema a solucionar', 'Datos estadísticos',
+        'Pregunta de investigación', 'Objetivo (original)', 'Objetivo (español)', 
+        'Objetivo reescrito', 'Justificación', 'Hipótesis', 'Tipo investigación',
+        'Estudios previos', 'Población/muestra/datos', 'Recolección datos',
+        'Resultados', 'Conclusiones', 'Discusión', 'Trabajos futuros',
         'Enlace', 'EID', 'Seleccionado'
     ]
     
