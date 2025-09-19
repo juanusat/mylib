@@ -60,6 +60,14 @@ def get_field_metadata():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@main_bp.route('/api/column-metadata', methods=['GET'])
+def get_column_metadata():
+    try:
+        metadata = ColumnMetadata.get_all_metadata()
+        return jsonify({'metadata': metadata})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @main_bp.route('/api/import-csv', methods=['POST'])
 def import_csv():
     try:

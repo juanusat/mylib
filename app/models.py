@@ -281,3 +281,27 @@ class ColumnMetadata:
         '''
         rows = DatabaseManager.execute_query(query, fetch_all=True)
         return [row[0] for row in rows] if rows else []
+    
+    @staticmethod
+    def get_all_metadata():
+        query = '''
+            SELECT nro_columna, columna, explicacion, formato, dato_fijo, 
+                   idioma_deseado_redactar, id_from_backup 
+            FROM metadata_columnas 
+            ORDER BY nro_columna
+        '''
+        rows = DatabaseManager.execute_query(query, fetch_all=True)
+        
+        result = []
+        for row in rows:
+            result.append({
+                'nro_columna': row[0],
+                'columna': row[1],
+                'explicacion': row[2],
+                'formato': row[3],
+                'dato_fijo': row[4],
+                'idioma_deseado_redactar': row[5],
+                'id_from_backup': row[6]
+            })
+        
+        return result

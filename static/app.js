@@ -1239,3 +1239,161 @@ async function refreshArticleInModal(articleId) {
         console.error('Error refreshing article:', error);
     }
 }
+
+let columnMetadata = [];
+
+async function openInstructionsModal() {
+    try {
+        if (columnMetadata.length === 0) {
+            await loadColumnMetadata();
+        }
+        
+        const instructions = generateInstructionsPrompt();
+        
+        document.getElementById('instructionsModal').classList.remove('hidden');
+        document.getElementById('instructionsText').value = instructions;
+        
+    } catch (error) {
+        console.error('Error opening instructions modal:', error);
+        showMessage('Error al generar las instrucciones: ' + error.message, 'error');
+    }
+}
+
+async function loadColumnMetadata() {
+    try {
+        const response = await fetch('/api/column-metadata');
+        const data = await response.json();
+        
+        if (response.ok) {
+            columnMetadata = data.metadata;
+        } else {
+            throw new Error(data.error || 'Error al cargar metadatos');
+        }
+        
+    } catch (error) {
+        console.error('Error loading column metadata:', error);
+        throw error;
+    }
+}
+
+function generateInstructionsPrompt() {
+    const currentDate = new Date().toLocaleDateString('es-ES');
+    
+    let prompt = `# INSTRUCCIONES PARA ANÁLISIS DE ARTÍCULO CIENTÍFICO
+Por favor, complete los siguientes campos basándose en la lectura cuidadosa del artículo científico. Para cada campo, siga las instrucciones específicas proporcionadas:
+---
+`;
+
+    // Group fields by categories for better organization
+    const categories = {
+        'Información Básica': [1, 2, 3, 4, 5, 6, 7, 8, 29, 30, 31],
+        'Contenido y Palabras Clave': [9, 10, 11, 12],
+        'Problema e Investigación': [13, 14, 15, 16, 17, 18, 19, 20, 21],
+        'Metodología': [22, 23, 24],
+        'Resultados y Análisis': [25, 26, 27, 28]
+    };
+
+    for (const [categoryName, columnNumbers] of Object.entries(categories)) {
+        prompt += `## ${categoryName}\n\n`;
+        
+        columnNumbers.forEach(colNum => {
+            const metadata = columnMetadata.find(m => m.nro_columna === colNum);
+            if (metadata) {
+                prompt += `### ${colNum}. ${metadata.columna}\n`;
+                
+                if (metadata.explicacion && metadata.explicacion.trim()) {
+                    prompt += `**Instrucciones:** ${metadata.explicacion}\n`;
+                }
+                
+                if (metadata.formato && metadata.formato.trim()) {
+                    prompt += `**Formato esperado:** ${metadata.formato}\n`;
+                }
+                
+                if (metadata.dato_fijo && metadata.dato_fijo.trim()) {
+                    prompt += `**Valor fijo:** ${metadata.dato_fijo}\n`;
+                }
+                
+                if (metadata.idioma_deseado_redactar && metadata.idioma_deseado_redactar.trim()) {
+                    prompt += `**Idioma:** ${metadata.idioma_deseado_redactar}\n`;
+                }
+                
+                if (metadata.id_from_backup && metadata.id_from_backup.trim()) {
+                    prompt += `**Nota:** Este campo corresponde a "${metadata.id_from_backup}" en el CSV original de Scopus.\n`;
+                }
+                
+                prompt += `\n---\n\n`;
+            }
+        });
+    }
+
+    prompt += `## NOTAS IMPORTANTES
+
+1. **Campos en español**: Cuando se especifica "español" como idioma, redacte la respuesta en español claro y académico.
+
+2. **Campos originales**: Los campos marcados como "original" deben conservar el contenido tal como aparece en el artículo.
+
+3. **Formato de lista**: Cuando se especifica formato "lista", use viñetas o numeración para organizar la información.
+
+4. **Formato de prosa**: Cuando se especifica formato "prosa", redacte en párrafos coherentes.
+
+5. **Valores por defecto**: Algunos campos tienen valores fijos (como "Scopus" para base de datos).
+
+6. **Campos vacíos**: Si el artículo no presenta información para un campo específico, indique claramente "No presenta [tipo de información]".
+
+## RECOMENDACIONES PARA EL ANÁLISIS
+
+- Lea el artículo completo antes de comenzar el análisis
+- Preste especial atención al abstract, introducción, metodología, resultados y conclusiones
+- Sea preciso y objetivo en sus respuestas
+- Mantenga la coherencia en el estilo de redacción
+- Verifique que toda la información esté correctamente categorizada
+
+---
+
+**¡Recuerde revisar cada campo cuidadosamente antes de finalizar el análisis!**`;
+
+    return prompt;
+}
+
+async function regenerateInstructions() {
+    try {
+        const instructions = generateInstructionsPrompt();
+        document.getElementById('instructionsText').value = instructions;
+        showMessage('Instrucciones regeneradas exitosamente', 'success');
+    } catch (error) {
+        console.error('Error regenerating instructions:', error);
+        showMessage('Error al regenerar las instrucciones', 'error');
+    }
+}
+
+async function copyInstructions() {
+    try {
+        const textarea = document.getElementById('instructionsText');
+        
+        // Select all text
+        textarea.select();
+        textarea.setSelectionRange(0, 99999); // For mobile devices
+        
+        // Copy to clipboard
+        await navigator.clipboard.writeText(textarea.value);
+        
+        showMessage('Instrucciones copiadas al portapapeles', 'success');
+        
+    } catch (error) {
+        console.error('Error copying instructions:', error);
+        
+        // Fallback for older browsers
+        try {
+            const textarea = document.getElementById('instructionsText');
+            textarea.select();
+            document.execCommand('copy');
+            showMessage('Instrucciones copiadas al portapapeles', 'success');
+        } catch (fallbackError) {
+            showMessage('Error al copiar al portapapeles. Use Ctrl+A y Ctrl+C manualmente.', 'error');
+        }
+    }
+}
+
+function closeInstructionsModal() {
+    document.getElementById('instructionsModal').classList.add('hidden');
+}
