@@ -65,6 +65,19 @@ export function showMessage(message, type) {
     }, 5000);
 }
 
+export function showInstructionsMessage(message, type) {
+    const messageDiv = document.getElementById('instructionsMessage');
+    messageDiv.className = `p-3 rounded ${type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 
+                                        type === 'info' ? 'bg-blue-100 text-blue-700 border border-blue-200' : 
+                                        'bg-red-100 text-red-700 border border-red-200'}`;
+    messageDiv.textContent = message;
+    messageDiv.classList.remove('hidden');
+    
+    setTimeout(() => {
+        messageDiv.classList.add('hidden');
+    }, 4000);
+}
+
 export async function openInstructionsModal() {
     try {
         await loadColumnMetadata();
@@ -140,39 +153,73 @@ export async function regenerateInstructions() {
         await loadColumnMetadata();
         const instructionsText = generateInstructionsPrompt();
         document.getElementById('instructionsText').value = instructionsText;
-        showMessage('Instrucciones regeneradas', 'success');
+        showInstructionsMessage('Instrucciones regeneradas', 'success');
     } catch (error) {
         console.error('Error regenerating instructions:', error);
-        showMessage('Error al regenerar las instrucciones', 'error');
+        showInstructionsMessage('Error al regenerar las instrucciones', 'error');
     }
 }
 
-export async function copyInstructions() {
+export async function copyInstructions(event) {
+    const textArea = document.getElementById('instructionsText');
+    const button = event?.target || document.querySelector('button[onclick="copyInstructions(event)"]');
+    
+    // Check if clipboard API is available
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            await navigator.clipboard.writeText(textArea.value);
+            
+            // Visual feedback
+            if (button) {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                button.classList.add('bg-green-800');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('bg-green-800');
+                    button.classList.add('bg-green-600', 'hover:bg-green-700');
+                }, 2000);
+            }
+            return;
+        } catch (err) {
+            console.error('Error copying to clipboard:', err);
+        }
+    }
+    
+    // Fallback: try the older document.execCommand method
     try {
-        const textArea = document.getElementById('instructionsText');
-        await navigator.clipboard.writeText(textArea.value);
-        
-        // Visual feedback
-        const button = event.target;
-        const originalText = button.innerHTML;
-        button.innerHTML = '<i class="fas fa-check"></i> Copiado';
-        button.classList.remove('bg-green-600', 'hover:bg-green-700');
-        button.classList.add('bg-green-800');
-        
-        setTimeout(() => {
-            button.innerHTML = originalText;
-            button.classList.remove('bg-green-800');
-            button.classList.add('bg-green-600', 'hover:bg-green-700');
-        }, 2000);
-        
-    } catch (err) {
-        console.error('Error copying to clipboard:', err);
-        
-        // Fallback: select text
-        const textArea = document.getElementById('instructionsText');
+        textArea.focus();
         textArea.select();
-        textArea.setSelectionRange(0, 99999);
-        showMessage('Texto seleccionado. Use Ctrl+C para copiar', 'info');
+        textArea.setSelectionRange(0, textArea.value.length);
+        
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showInstructionsMessage('Texto copiado al portapapeles', 'success');
+            if (button) {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                button.classList.add('bg-green-800');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('bg-green-800');
+                    button.classList.add('bg-green-600', 'hover:bg-green-700');
+                }, 2000);
+            }
+        } else {
+            throw new Error('execCommand failed');
+        }
+    } catch (fallbackErr) {
+        console.error('Fallback copy failed:', fallbackErr);
+        
+        // Final fallback: just select the text
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, textArea.value.length);
+        showInstructionsMessage('Texto seleccionado. Use Ctrl+C para copiar manualmente', 'info');
     }
 }
 
