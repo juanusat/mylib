@@ -3,3 +3,4 @@ data-to-import/
 priv-*/
 *.pyc
 __pycache__/
+uploads/
