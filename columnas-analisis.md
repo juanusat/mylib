@@ -22,7 +22,7 @@
 |20|Hipótesis|(Si no lo presenta el artículo indicar: "No presenta hipótesis")|prosa||español||||
 |21|Tipo de investigacion|Identificar el tipo de investigación según tu observación, en caso el autor no lo mencione y explica el porqué es ese el tipo de forma breve.  (documental, descriptiva, correlacional, explicativa, seccional o longitudinal)|prosa||español||||
 |22|Estudios previos|Cómo solucionaron el problema o similares otros autores (antecedentes de investigación)|lista||español||||
-|23|Población/muestra/datos)|Mencionar si se presenta, con su origen o URL)|lista||español||||
+|23|Población/muestra/datos|Mencionar si se presenta, con su origen o URL)|lista||español||||
 |24|Recolección de datos|Metodología de desarrollo, métodos, algoritmos, herramienta, técnicas e instrumentos de recolección de datos (indicar nombre y para lo aplicó) (Va a depender de lo contiene el artículo)|lista||español||||
 |25|Resultados|(síntesis parafraseados)|lista||español||||
 |26|Conclusiones|(síntesis parafraseados)|lista||español||||
