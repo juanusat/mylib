@@ -7,19 +7,36 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Custom modal styles for better scrolling */
+        /* Estilos para modales con scroll controlado */
         .modal-overlay {
+            backdrop-filter: blur(2px);
+        }
+        
+        /* Asegurar que el modal no desborde */
+        .modal-container {
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* El contenido scrolleable */
+        .modal-scroll-content {
             overflow-y: auto;
+            max-height: calc(90vh - 160px); /* Resta header y footer */
+        }
+        
+        /* Mejorar scroll en móviles */
+        .modal-scroll-content {
             -webkit-overflow-scrolling: touch;
         }
-        .modal-content {
-            min-height: min-content;
-            margin: 2rem auto;
-        }
-        /* Ensure modal can scroll on mobile */
-        @media (max-height: 640px) {
-            .modal-content {
-                margin: 1rem auto;
+        
+        /* Responsive para pantallas pequeñas */
+        @media (max-height: 600px) {
+            .modal-container {
+                max-height: 95vh;
+            }
+            .modal-scroll-content {
+                max-height: calc(95vh - 140px);
             }
         }
     </style>
@@ -50,13 +67,13 @@
         <!-- Confirmation Modal -->
         <div id="confirmModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal-overlay">
             <div class="flex items-center justify-center min-h-screen p-4">
-                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-[80vh] overflow-hidden">
-                    <div class="p-6 border-b">
+                <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full modal-container">
+                    <div class="p-6 border-b flex-shrink-0 bg-white rounded-t-lg">
                         <h3 class="text-lg font-semibold text-orange-600">
                             <i class="fas fa-exclamation-triangle"></i> Artículos Duplicados Detectados
                         </h3>
                     </div>
-                    <div class="p-6 overflow-y-auto">
+                    <div class="modal-scroll-content p-6">
                         <div id="duplicateInfo" class="space-y-4">
                             <!-- Duplicate info will be populated here -->
                         </div>
@@ -69,7 +86,7 @@
                             </ul>
                         </div>
                     </div>
-                    <div class="p-6 border-t flex justify-end space-x-2">
+                    <div class="p-6 border-t flex justify-end space-x-2 flex-shrink-0 bg-white rounded-b-lg">
                         <button onclick="closeConfirmModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
                             Cancelar
                         </button>
@@ -288,14 +305,17 @@
 
         <!-- Edit Modal -->
         <div id="editModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 modal-overlay">
-            <div class="flex items-center justify-center min-h-screen p-4 py-8">
-                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full flex flex-col max-h-[calc(100vh-4rem)] modal-content">
-                    <div class="p-6 border-b flex-shrink-0">
+            <div class="flex items-center justify-center min-h-screen p-4">
+                <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full modal-container">
+                    <!-- Header fijo -->
+                    <div class="p-6 border-b flex-shrink-0 bg-white rounded-t-lg">
                         <h3 class="text-lg font-semibold">
                             <i class="fas fa-edit text-blue-600"></i> Editar Artículo
                         </h3>
                     </div>
-                    <div class="p-6 overflow-y-auto flex-1 min-h-0">
+                    
+                    <!-- Contenido con scroll -->
+                    <div class="modal-scroll-content p-6">
                         <form id="editForm" class="space-y-4">
                             <input type="hidden" id="articleId">
                             
@@ -498,7 +518,9 @@
                             </div>
                         </form>
                     </div>
-                    <div class="p-6 border-t flex justify-end space-x-2 flex-shrink-0">
+                    
+                    <!-- Botones fijos -->
+                    <div class="p-6 border-t flex justify-end space-x-2 flex-shrink-0 bg-white rounded-b-lg">
                         <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
                             Cancelar
                         </button>
