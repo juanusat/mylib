@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, jsonify, send_file
 from app.models import Article, ColumnMetadata
-from app.services import CSVService, ExcelService
+from app.services import CSVService, ExcelService, DocumentService
 
 main_bp = Blueprint('main', __name__)
 
@@ -11,8 +11,8 @@ def index():
 @main_bp.route('/api/articles', methods=['GET'])
 def get_articles():
     try:
-        articles = Article.get_all()
-        return jsonify([Article.to_dict(article) for article in articles])
+        articles = Article.get_all_with_documents()
+        return jsonify(articles)
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -23,7 +23,7 @@ def get_article(article_id):
         if not article:
             return jsonify({'error': 'Article not found'}), 404
         
-        return jsonify(Article.to_dict(article))
+        return jsonify(Article.to_dict_with_documents(article))
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
@@ -105,3 +105,37 @@ def export_excel_bookmarks():
         
     except Exception as e:
         return jsonify({'error': f'Error al exportar Excel de marcadores: {str(e)}'}), 500
+
+@main_bp.route('/api/articles/<int:article_id>/documents', methods=['POST'])
+def upload_document(article_id):
+    try:
+        if 'file' not in request.files:
+            return jsonify({'error': 'No se ha proporcionado ningún archivo'}), 400
+        
+        file = request.files['file']
+        doc_type = request.form.get('doc_type', 'original')  # 'original' o 'translated'
+        
+        if doc_type not in ['original', 'translated']:
+            return jsonify({'error': 'Tipo de documento inválido'}), 400
+        
+        result = DocumentService.upload_document(file, article_id, doc_type)
+        return jsonify(result)
+        
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': f'Error al subir documento: {str(e)}'}), 500
+
+@main_bp.route('/api/articles/<int:article_id>/documents/<doc_type>', methods=['DELETE'])
+def delete_document(article_id, doc_type):
+    try:
+        if doc_type not in ['original', 'translated']:
+            return jsonify({'error': 'Tipo de documento inválido'}), 400
+        
+        result = DocumentService.delete_document(article_id, doc_type)
+        return jsonify(result)
+        
+    except ValueError as e:
+        return jsonify({'error': str(e)}), 400
+    except Exception as e:
+        return jsonify({'error': f'Error al eliminar documento: {str(e)}'}), 500

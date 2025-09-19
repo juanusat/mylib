@@ -1,11 +1,14 @@
 import csv
 import io
+import os
 import tempfile
+import uuid
 from datetime import datetime
+from werkzeug.utils import secure_filename
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill, Alignment
 
-from app.models import Article
+from app.models import Article, ArticleDocument
 
 class CSVService:
     
@@ -238,3 +241,144 @@ class ExcelService:
         
         ExcelService._set_column_widths(ws)
         return ExcelService._save_workbook(wb, 'matriz-marcadores')
+
+
+class DocumentService:
+    UPLOAD_FOLDER = 'uploads'
+    ALLOWED_EXTENSIONS = {'pdf'}
+    MAX_FILE_SIZE = 16 * 1024 * 1024  # 16MB
+    
+    @staticmethod
+    def _create_upload_folder():
+        if not os.path.exists(DocumentService.UPLOAD_FOLDER):
+            os.makedirs(DocumentService.UPLOAD_FOLDER)
+    
+    @staticmethod
+    def _allowed_file(filename):
+        return '.' in filename and \
+               filename.rsplit('.', 1)[1].lower() in DocumentService.ALLOWED_EXTENSIONS
+    
+    @staticmethod
+    def _generate_unique_filename(original_filename):
+        filename = secure_filename(original_filename)
+        name, ext = os.path.splitext(filename)
+        unique_name = f"{name}_{uuid.uuid4().hex}{ext}"
+        return unique_name
+    
+    @staticmethod
+    def upload_document(file, article_id, doc_type='original'):
+        try:
+            # Validaciones
+            if not file or file.filename == '':
+                raise ValueError('No se ha seleccionado ningún archivo')
+            
+            if not DocumentService._allowed_file(file.filename):
+                raise ValueError('Solo se permiten archivos PDF')
+            
+            file.seek(0, os.SEEK_END)
+            file_size = file.tell()
+            file.seek(0)
+            
+            if file_size > DocumentService.MAX_FILE_SIZE:
+                raise ValueError('El archivo es demasiado grande (máximo 16MB)')
+            
+            DocumentService._create_upload_folder()
+            
+            unique_filename = DocumentService._generate_unique_filename(file.filename)
+            file_path = os.path.join(DocumentService.UPLOAD_FOLDER, unique_filename)
+            file.save(file_path)
+            
+            existing_docs = ArticleDocument.get_by_article_id(article_id)
+            existing_doc = None
+            
+            for doc in existing_docs:
+                doc_dict = ArticleDocument.to_dict(doc)
+                if doc_type == 'original' and doc_dict['nombre_archivo_original']:
+                    existing_doc = doc_dict
+                    break
+                elif doc_type == 'translated' and doc_dict['nombre_archivo_traducido']:
+                    existing_doc = doc_dict
+                    break
+            
+            if existing_doc:
+                if doc_type == 'original':
+                    old_file = existing_doc['nombre_archivo_original']
+                    if old_file:
+                        old_path = os.path.join(DocumentService.UPLOAD_FOLDER, old_file)
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
+                    
+                    ArticleDocument.delete_by_article_and_type(article_id, 'original')
+                    ArticleDocument.create(article_id, unique_filename, None)
+                
+                elif doc_type == 'translated':
+                    old_file = existing_doc['nombre_archivo_traducido']
+                    if old_file:
+                        old_path = os.path.join(DocumentService.UPLOAD_FOLDER, old_file)
+                        if os.path.exists(old_path):
+                            os.remove(old_path)
+                    
+                    ArticleDocument.update_translated_filename(article_id, unique_filename)
+            else:
+                if doc_type == 'original':
+                    ArticleDocument.create(article_id, unique_filename, None)
+                elif doc_type == 'translated':
+                    original_docs = [doc for doc in existing_docs 
+                                   if ArticleDocument.to_dict(doc)['nombre_archivo_original']]
+                    if original_docs:
+                        ArticleDocument.update_translated_filename(article_id, unique_filename)
+                    else:
+                        ArticleDocument.create(article_id, None, unique_filename)
+            
+            return {
+                'success': True,
+                'message': f'Documento {doc_type} subido correctamente',
+                'filename': unique_filename,
+                'original_filename': file.filename
+            }
+            
+        except Exception as e:
+            try:
+                if 'file_path' in locals() and os.path.exists(file_path):
+                    os.remove(file_path)
+            except:
+                pass
+            
+            raise ValueError(str(e))
+    
+    @staticmethod
+    def delete_document(article_id, doc_type):
+        try:
+            documents = ArticleDocument.get_by_article_id(article_id)
+            
+            filename_to_delete = None
+            for doc in documents:
+                doc_dict = ArticleDocument.to_dict(doc)
+                if doc_type == 'original' and doc_dict['nombre_archivo_original']:
+                    filename_to_delete = doc_dict['nombre_archivo_original']
+                    break
+                elif doc_type == 'translated' and doc_dict['nombre_archivo_traducido']:
+                    filename_to_delete = doc_dict['nombre_archivo_traducido']
+                    break
+            
+            if not filename_to_delete:
+                raise ValueError('No se encontró el documento a eliminar')
+            
+            file_path = os.path.join(DocumentService.UPLOAD_FOLDER, filename_to_delete)
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            # Eliminar de base de datos
+            ArticleDocument.delete_by_article_and_type(article_id, doc_type)
+            
+            return {
+                'success': True,
+                'message': f'Documento {doc_type} eliminado correctamente'
+            }
+            
+        except Exception as e:
+            raise ValueError(str(e))
+    
+    @staticmethod
+    def get_document_path(filename):
+        return os.path.join(DocumentService.UPLOAD_FOLDER, filename)

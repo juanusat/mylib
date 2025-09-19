@@ -33,6 +33,13 @@ CREATE TABLE articulos (
     seleccionado BOOLEAN DEFAULT FALSE
 );
 
+CREATE TABLE articulo_documentos (
+    id SERIAL PRIMARY KEY,
+    articulo_id INTEGER REFERENCES articulos(id) ON DELETE CASCADE,
+    nombre_archivo_original VARCHAR(500),
+    nombre_archivo_traducido VARCHAR(500)
+);
+
 CREATE TABLE metadata_columnas (
     id SERIAL PRIMARY KEY,
     nro_columna INTEGER,

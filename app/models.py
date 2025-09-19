@@ -8,6 +8,45 @@ class Article:
         return DatabaseManager.execute_query(query, fetch_all=True)
     
     @staticmethod
+    def get_all_with_documents():
+        """Obtiene todos los artículos con sus documentos de manera optimizada"""
+        # Obtener todos los artículos
+        articles = Article.get_all()
+        
+        if not articles:
+            return []
+        
+        # Obtener todos los documentos de una vez
+        article_ids = [str(article[0]) for article in articles]
+        if article_ids:
+            placeholders = ','.join(['%s'] * len(article_ids))
+            docs_query = f'''
+                SELECT id, articulo_id, nombre_archivo_original, nombre_archivo_traducido 
+                FROM articulo_documentos 
+                WHERE articulo_id IN ({placeholders})
+            '''
+            documents = DatabaseManager.execute_query(docs_query, article_ids, fetch_all=True)
+            
+            # Mapear documentos por artículo
+            docs_by_article = {}
+            for doc in documents:
+                article_id = doc[1]
+                if article_id not in docs_by_article:
+                    docs_by_article[article_id] = []
+                docs_by_article[article_id].append(ArticleDocument.to_dict(doc))
+        else:
+            docs_by_article = {}
+        
+        # Combinar artículos con documentos
+        result = []
+        for article in articles:
+            article_dict = Article.to_dict(article)
+            article_dict['documentos'] = docs_by_article.get(article[0], [])
+            result.append(article_dict)
+        
+        return result
+    
+    @staticmethod
     def get_all_for_export():
         query = '''
             SELECT autor, nombre_revista, quartil_revista, anio, doi,
@@ -152,7 +191,83 @@ class Article:
             'trabajos_futuros': row[28],
             'enlace': row[29],
             'eid': row[30],
-            'seleccionado': row[31]
+            'seleccionado': row[31],
+            'documentos': []  # Lista vacía por defecto para compatibilidad
+        }
+    
+    @staticmethod
+    def to_dict_with_documents(row):
+        """Versión que incluye documentos - solo usar cuando sea necesario"""
+        if not row:
+            return None
+            
+        article_dict = Article.to_dict(row)
+        
+        # Agregar información de documentos
+        documents = ArticleDocument.get_by_article_id(row[0])
+        article_dict['documentos'] = [ArticleDocument.to_dict(doc) for doc in documents] if documents else []
+        
+        return article_dict
+
+class ArticleDocument:
+    
+    @staticmethod
+    def get_by_article_id(article_id):
+        """Obtiene todos los documentos de un artículo específico"""
+        query = 'SELECT id, articulo_id, nombre_archivo_original, nombre_archivo_traducido FROM articulo_documentos WHERE articulo_id = %s'
+        return DatabaseManager.execute_query(query, (article_id,), fetch_all=True)
+    
+    @staticmethod
+    def create(article_id, original_filename, translated_filename=None):
+        """Crea un nuevo documento asociado a un artículo"""
+        query = '''
+            INSERT INTO articulo_documentos (articulo_id, nombre_archivo_original, nombre_archivo_traducido)
+            VALUES (%s, %s, %s)
+            RETURNING id
+        '''
+        params = (article_id, original_filename, translated_filename)
+        result = DatabaseManager.execute_query(query, params, fetch_one=True)
+        return result[0] if result else None
+    
+    @staticmethod
+    def delete(document_id):
+        """Elimina un documento específico"""
+        query = 'DELETE FROM articulo_documentos WHERE id = %s'
+        DatabaseManager.execute_query(query, (document_id,))
+    
+    @staticmethod
+    def delete_by_article_and_type(article_id, doc_type):
+        """Elimina documento por artículo y tipo (original o traducido)"""
+        if doc_type == 'original':
+            query = 'DELETE FROM articulo_documentos WHERE articulo_id = %s AND nombre_archivo_original IS NOT NULL'
+        elif doc_type == 'translated':
+            query = 'DELETE FROM articulo_documentos WHERE articulo_id = %s AND nombre_archivo_traducido IS NOT NULL'
+        else:
+            return
+        
+        DatabaseManager.execute_query(query, (article_id,))
+    
+    @staticmethod
+    def update_translated_filename(article_id, translated_filename):
+        """Actualiza el nombre del archivo traducido"""
+        query = '''
+            UPDATE articulo_documentos 
+            SET nombre_archivo_traducido = %s 
+            WHERE articulo_id = %s AND nombre_archivo_original IS NOT NULL
+        '''
+        DatabaseManager.execute_query(query, (translated_filename, article_id))
+    
+    @staticmethod
+    def to_dict(row):
+        """Convierte una fila de documento a diccionario"""
+        if not row:
+            return None
+        
+        return {
+            'id': row[0],
+            'articulo_id': row[1],
+            'nombre_archivo_original': row[2],
+            'nombre_archivo_traducido': row[3]
         }
 
 class ColumnMetadata:
