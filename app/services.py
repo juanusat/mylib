@@ -96,7 +96,7 @@ class CSVService:
 class ExcelService:
     # Configuración común para todas las exportaciones
     HEADERS = [
-        'ID', 'Autor', 'Nombre revista', 'Quartil revista', 'Fecha', 'DOI',
+        'Autor', 'Nombre revista', 'Quartil revista', 'Fecha', 'DOI',
         'Título (original)', 'Título (español)', 'Base de datos', 'Abstract', 'Resumen',
         'Keywords autor', 'Keywords indexados', 'Problema a solucionar', 'Datos estadísticos',
         'Pregunta de investigación', 'Objetivo (original)', 'Objetivo (español)', 
@@ -107,42 +107,41 @@ class ExcelService:
     ]
     
     COLUMN_WIDTHS = {
-        1: 8,   # ID
-        2: 25,  # Autor
-        3: 20,  # Revista
-        4: 10,  # Quartil
-        5: 8,   # Año
-        6: 15,  # DOI
-        7: 30,  # Título Original
-        8: 30,  # Título Español
-        9: 12,  # Base de Datos
-        10: 40, # Abstract
-        11: 40, # Resumen
-        12: 20, # Keywords Autor
-        13: 20, # Keywords Indexados
-        14: 25, # Problema
-        15: 20, # Datos Estadísticos
-        16: 25, # Pregunta Investigación
-        17: 25, # Objetivo Original
-        18: 25, # Objetivo Español
-        19: 25, # Objetivo Reescrito
-        20: 25, # Justificación
-        21: 20, # Hipótesis
-        22: 18, # Tipo Investigación
-        23: 25, # Estudios Previos
-        24: 25, # Población/Muestra
-        25: 25, # Recolección Datos
-        26: 30, # Resultados
-        27: 30, # Conclusiones
-        28: 30, # Discusión
-        29: 25, # Trabajos Futuros
-        30: 25, # Enlace
-        31: 15, # EID
-        32: 12  # Seleccionado
+        1: 25,  # Autor
+        2: 20,  # Revista
+        3: 10,  # Quartil
+        4: 8,   # Año
+        5: 15,  # DOI
+        6: 30,  # Título original
+        7: 30,  # Título español
+        8: 12,  # Base de datos
+        9: 40,  # Abstract
+        10: 40, # Resumen
+        11: 20, # Keywords autor
+        12: 20, # Keywords indexados
+        13: 25, # Problema
+        14: 20, # Datos estadísticos
+        15: 25, # Pregunta investigación
+        16: 25, # Objetivo original
+        17: 25, # Objetivo español
+        18: 25, # Objetivo reescrito
+        19: 25, # Justificación
+        20: 20, # Hipótesis
+        21: 18, # Tipo investigación
+        22: 25, # Estudios previos
+        23: 25, # Población/muestra
+        24: 25, # Recolección datos
+        25: 30, # Resultados
+        26: 30, # Conclusiones
+        27: 30, # Discusión
+        28: 25, # Trabajos futuros
+        29: 25, # Enlace
+        30: 15, # EID
+        31: 12  # Seleccionado
     }
     
     # Columnas que requieren ajuste de texto (títulos, abstract, resumen)
-    TEXT_WRAP_COLUMNS = [7, 8, 10, 11]
+    TEXT_WRAP_COLUMNS = [6, 7, 9, 10]
     
     @staticmethod
     def _get_local_timestamp():
@@ -198,7 +197,7 @@ class ExcelService:
         
         # Agregar mensaje informativo
         ws.cell(row=2, column=1, value="No hay artículos marcados como favoritos")
-        ws.merge_cells('A2:AF2')
+        ws.merge_cells('A2:AE2')
         
         # Centrar y estilizar el mensaje
         message_cell = ws.cell(row=2, column=1)
@@ -208,7 +207,7 @@ class ExcelService:
     @staticmethod
     def create_excel_export():
         """Crea exportación Excel con todos los artículos"""
-        articles = Article.get_all()
+        articles = Article.get_all_for_export()
         
         wb = Workbook()
         ws = wb.active
@@ -223,7 +222,7 @@ class ExcelService:
     @staticmethod
     def create_excel_export_bookmarks():
         """Crea exportación Excel solo con artículos marcados como favoritos"""
-        articles = Article.get_bookmarks()
+        articles = Article.get_bookmarks_for_export()
         
         wb = Workbook()
         ws = wb.active

@@ -8,8 +8,38 @@ class Article:
         return DatabaseManager.execute_query(query, fetch_all=True)
     
     @staticmethod
+    def get_all_for_export():
+        query = '''
+            SELECT autor, nombre_revista, quartil_revista, anio, doi,
+                   titulo_original, titulo_espanol, base_datos, abstract, resumen,
+                   keywords_autor, keywords_indexed, problema_articulo, datos_estadisticos,
+                   pregunta_investigacion, objetivo_original, objetivo_espanol,
+                   objetivo_reescrito, justificacion, hipotesis, tipo_investigacion,
+                   estudios_previos, poblacion_muestra_datos, recoleccion_datos,
+                   resultados, conclusiones, discusion, trabajos_futuros,
+                   enlace, eid, seleccionado
+            FROM articulos ORDER BY id DESC
+        '''
+        return DatabaseManager.execute_query(query, fetch_all=True)
+    
+    @staticmethod
     def get_bookmarks():
         query = 'SELECT * FROM articulos WHERE seleccionado = true ORDER BY id DESC'
+        return DatabaseManager.execute_query(query, fetch_all=True)
+    
+    @staticmethod
+    def get_bookmarks_for_export():
+        query = '''
+            SELECT autor, nombre_revista, quartil_revista, anio, doi,
+                   titulo_original, titulo_espanol, base_datos, abstract, resumen,
+                   keywords_autor, keywords_indexed, problema_articulo, datos_estadisticos,
+                   pregunta_investigacion, objetivo_original, objetivo_espanol,
+                   objetivo_reescrito, justificacion, hipotesis, tipo_investigacion,
+                   estudios_previos, poblacion_muestra_datos, recoleccion_datos,
+                   resultados, conclusiones, discusion, trabajos_futuros,
+                   enlace, eid, seleccionado
+            FROM articulos WHERE seleccionado = true ORDER BY id DESC
+        '''
         return DatabaseManager.execute_query(query, fetch_all=True)
     
     @staticmethod
