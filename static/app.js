@@ -12,7 +12,7 @@ let visibleColumns = {
     anio: false,
     nombre_revista: false,
     quartil_revista: false,
-    doi: true,
+    doi: false,
     base_datos: false,
     abstract: false,
     resumen: false,
