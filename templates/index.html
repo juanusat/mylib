@@ -49,11 +49,13 @@
         .scopus-imported-field {
             border-color: #f59e0b !important; /* Color ámbar/naranja */
             background-color: #fffbeb !important; /* Fondo muy claro ámbar */
+            color: #6b7280 !important; /* Texto gris */
             box-shadow: 0 0 0 1px #f59e0b !important;
         }
         
         .scopus-imported-field:focus {
             border-color: #d97706 !important; /* Más oscuro al hacer focus */
+            color: #374151 !important; /* Texto un poco más oscuro al hacer focus */
             box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
         }
         
@@ -669,6 +671,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
+    <script type="module" src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 </html>

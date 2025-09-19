@@ -56,7 +56,11 @@ def check_csv():
 def get_field_metadata():
     try:
         readonly_fields = ColumnMetadata.get_readonly_fields()
-        return jsonify({'readonly_fields': readonly_fields})
+        metadata = ColumnMetadata.get_all_metadata()
+        return jsonify({
+            'readonly_fields': readonly_fields,
+            'columns': metadata
+        })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
