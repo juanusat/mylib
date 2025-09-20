@@ -1,7 +1,7 @@
 import { setAllArticles, setReadonlyFields, setColumnMetadata, allArticles, filteredArticles, setFilteredArticles } from './config.js';
 import { renderTable, downloadExcelFile } from './table.js';
 import { renderDocumentSections } from './documents.js';
-import { showDuplicateConfirmation, showMessage, showModalMessage, clearModalMessage } from './modals.js';
+import { showDuplicateConfirmation, showMessage, showModalMessage, clearModalMessage, closeModal } from './modals.js';
 import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
 
 // Funciones para manejar el estado de carga del botón
@@ -227,9 +227,25 @@ export async function saveArticle() {
         });
 
         if (response.ok) {
+            const updatedArticle = await response.json();
+            
+            // Update the article in allArticles array immediately
+            const articleIndex = allArticles.findIndex(a => a.id === parseInt(id));
+            if (articleIndex !== -1) {
+                allArticles[articleIndex] = updatedArticle;
+            }
+            
+            // Update the article in filteredArticles array
+            const filteredIndex = filteredArticles.findIndex(a => a.id === parseInt(id));
+            if (filteredIndex !== -1) {
+                filteredArticles[filteredIndex] = updatedArticle;
+            }
+            
+            // Update the table immediately
+            renderTable();
+            
             showMessage('Artículo actualizado correctamente', 'success');
             closeModal();
-            loadArticles();
         } else {
             showMessage('Error al actualizar el artículo', 'error');
         }
@@ -432,7 +448,7 @@ export async function uploadDocument(sectionId, articleId, docType) {
         
         if (response.ok) {
             showModalMessage('Documento subido correctamente', 'success');
-            // Refresh article data in modal
+            // Refresh article data in modal and update table
             await refreshArticleInModal(articleId);
         } else {
             const error = await response.json();
@@ -456,7 +472,7 @@ export async function deleteDocument(articleId, docType) {
         
         if (response.ok) {
             showModalMessage('Documento eliminado correctamente', 'success');
-            // Refresh article data in modal
+            // Refresh article data in modal and update table
             await refreshArticleInModal(articleId);
         } else {
             const error = await response.json();
@@ -476,12 +492,19 @@ export async function refreshArticleInModal(articleId) {
         // Re-render document sections with updated data
         renderDocumentSections(article);
         
-        // Update allArticles array
+        // Update allArticles array immediately
         const index = allArticles.findIndex(a => a.id === parseInt(articleId));
         if (index !== -1) {
             allArticles[index] = article;
         }
         
+        // Update filteredArticles array
+        const filteredIndex = filteredArticles.findIndex(a => a.id === parseInt(articleId));
+        if (filteredIndex !== -1) {
+            filteredArticles[filteredIndex] = article;
+        }
+        
+        // Update the table immediately to reflect changes
         renderTable();
     } catch (error) {
         console.error('Error refreshing article:', error);
