@@ -1,5 +1,5 @@
 import { setAllArticles, setFilteredArticles, allArticles } from './config.js';
-import { loadFieldMetadata, loadArticles, checkCSV, importCSV, editArticle, saveArticle, toggleSelection, exportExcelAll, exportExcelBookmarks, uploadDocument, deleteDocument, refreshArticleInModal } from './api.js';
+import { loadFieldMetadata, loadArticles, checkCSV, importCSV, editArticle, saveArticle, toggleSelection, exportExcelAll, exportExcelBookmarks, uploadDocument, deleteDocument, refreshArticleInModal, setImportButtonLoading } from './api.js';
 import { renderTable, goToPage, changeItemsPerPage, filterArticles, updateColumns, toggleColumnSettings, toggleExportDropdown, downloadExcelFile, exportExcel } from './table.js';
 import { viewDocument, openDocumentSidebar, createDocumentSidebar, closeDocumentSidebar, openInNewTab, toggleFullscreen, getDocumentByType, renderDocumentSections, renderDocumentSection, showUploadForm, cancelUpload } from './documents.js';
 import { showDuplicateConfirmation, closeConfirmModal, proceedWithImport, forceImport, closeModal, showMessage, showInstructionsMessage, openInstructionsModal, generateInstructionsPrompt, regenerateInstructions, copyInstructions, closeInstructionsModal, loadColumnMetadata } from './modals.js';
@@ -57,3 +57,4 @@ window.openInstructionsModal = openInstructionsModal;
 window.regenerateInstructions = regenerateInstructions;
 window.copyInstructions = copyInstructions;
 window.closeInstructionsModal = closeInstructionsModal;
+window.setImportButtonLoading = setImportButtonLoading;

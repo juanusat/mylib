@@ -4,6 +4,23 @@ import { renderDocumentSections } from './documents.js';
 import { showDuplicateConfirmation, showMessage } from './modals.js';
 import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
 
+// Funciones para manejar el estado de carga del botón
+export function setImportButtonLoading(loading) {
+    const button = document.getElementById('importButton');
+    const textSpan = document.getElementById('importButtonText');
+    const loadingSpan = document.getElementById('importButtonLoading');
+    
+    if (loading) {
+        button.disabled = true;
+        textSpan.classList.add('hidden');
+        loadingSpan.classList.remove('hidden');
+    } else {
+        button.disabled = false;
+        textSpan.classList.remove('hidden');
+        loadingSpan.classList.add('hidden');
+    }
+}
+
 export async function loadFieldMetadata() {
     try {
         const response = await fetch('/api/field-metadata');
@@ -33,6 +50,9 @@ export async function checkCSV() {
         return;
     }
 
+    // Activar estado de carga
+    setImportButtonLoading(true);
+
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
 
@@ -45,13 +65,17 @@ export async function checkCSV() {
         const data = await response.json();
         
         if (data.status === 'duplicates_found') {
+            setImportButtonLoading(false); // Desactivar carga antes de mostrar modal
             showDuplicateConfirmation(data);
         } else if (data.status === 'ready_to_import') {
+            // No desactivar carga aquí, se desactivará en importCSV
             importCSV(false);
         } else {
+            setImportButtonLoading(false);
             showMessage(data.message, 'error');
         }
     } catch (error) {
+        setImportButtonLoading(false);
         console.error('Error checking CSV:', error);
         showMessage('Error al verificar el archivo CSV', 'error');
     }
@@ -64,6 +88,9 @@ export async function importCSV(forceImport = false) {
         alert('Por favor selecciona un archivo CSV');
         return;
     }
+
+    // Activar estado de carga (por si se llama directamente desde el modal)
+    setImportButtonLoading(true);
 
     const formData = new FormData();
     formData.append('file', fileInput.files[0]);
@@ -90,6 +117,9 @@ export async function importCSV(forceImport = false) {
     } catch (error) {
         console.error('Error importing CSV:', error);
         showMessage('Error al importar el archivo CSV', 'error');
+    } finally {
+        // Siempre desactivar el estado de carga al final
+        setImportButtonLoading(false);
     }
 }
 

@@ -2,6 +2,19 @@ import { readonlyFields, columnMetadata, setColumnMetadata } from './config.js';
 import { renderDocumentSections } from './documents.js';
 import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
 
+// Función para resetear el estado del botón de importación
+function resetImportButtonState() {
+    const button = document.getElementById('importButton');
+    const textSpan = document.getElementById('importButtonText');
+    const loadingSpan = document.getElementById('importButtonLoading');
+    
+    if (button && textSpan && loadingSpan) {
+        button.disabled = false;
+        textSpan.classList.remove('hidden');
+        loadingSpan.classList.add('hidden');
+    }
+}
+
 export function showDuplicateConfirmation(data) {
     const modal = document.getElementById('confirmModal');
     const duplicateInfo = document.getElementById('duplicateInfo');
@@ -37,6 +50,8 @@ export function showDuplicateConfirmation(data) {
 export function closeConfirmModal() {
     document.getElementById('confirmModal').classList.add('hidden');
     document.body.style.overflow = 'auto';
+    // Resetear el estado del botón si se cancela
+    resetImportButtonState();
 }
 
 export function proceedWithImport() {
