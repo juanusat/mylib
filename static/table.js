@@ -97,12 +97,24 @@ export function renderTableBody() {
         }
         if (visibleColumns.eid) cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs overflow-hidden text-ellipsis" title="${article.eid || ''}">${article.eid || ''}</td>`);
         if (visibleColumns.seleccionado) {
+            const isSelected = article.seleccionado;
+            const buttonClass = isSelected 
+                ? 'bg-green-500 hover:bg-green-600 text-white border-green-500' 
+                : 'bg-gray-200 hover:bg-gray-300 text-gray-600 border-gray-300';
+            const buttonText = isSelected ? '✓' : '○';
+            
             cells.push(`<td class="border border-gray-300 px-4 py-2 text-center">
-                <input type="checkbox" 
-                       ${article.seleccionado ? 'checked' : ''} 
-                       data-id="${article.id}"
-                       onchange="toggleSelection(${article.id})"
-                       class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500">
+                <button 
+                    id="toggle-btn-${article.id}"
+                    data-id="${article.id}"
+                    onclick="handleToggleSelection(${article.id})"
+                    class="w-8 h-8 rounded-full font-bold transition-all duration-200 border-2 focus:outline-none focus:ring-2 focus:ring-blue-300 ${buttonClass}"
+                    title="${isSelected ? 'Artículo seleccionado - Click para deseleccionar' : 'Artículo no seleccionado - Click para seleccionar'}">
+                    <span id="toggle-icon-${article.id}">${buttonText}</span>
+                    <span id="toggle-loading-${article.id}" class="hidden">
+                        <i class="fas fa-spinner fa-spin text-xs"></i>
+                    </span>
+                </button>
             </td>`);
         }
         

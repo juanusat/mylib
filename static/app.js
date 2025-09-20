@@ -1,5 +1,5 @@
 import { setAllArticles, setFilteredArticles, allArticles } from './config.js';
-import { loadFieldMetadata, loadArticles, checkCSV, importCSV, editArticle, saveArticle, toggleSelection, exportExcelAll, exportExcelBookmarks, uploadDocument, deleteDocument, refreshArticleInModal, setImportButtonLoading } from './api.js';
+import { loadFieldMetadata, loadArticles, checkCSV, importCSV, editArticle, saveArticle, handleToggleSelection, exportExcelAll, exportExcelBookmarks, uploadDocument, deleteDocument, refreshArticleInModal, setImportButtonLoading } from './api.js';
 import { renderTable, goToPage, changeItemsPerPage, filterArticles, updateColumns, toggleColumnSettings, toggleExportDropdown, downloadExcelFile, exportExcel } from './table.js';
 import { viewDocument, openDocumentSidebar, createDocumentSidebar, closeDocumentSidebar, openInNewTab, toggleFullscreen, getDocumentByType, renderDocumentSections, renderDocumentSection, showUploadForm, cancelUpload } from './documents.js';
 import { showDuplicateConfirmation, closeConfirmModal, proceedWithImport, forceImport, closeModal, showMessage, showModalMessage, clearModalMessage, showInstructionsMessage, openInstructionsModal, generateInstructionsPrompt, regenerateInstructions, copyInstructions, closeInstructionsModal, loadColumnMetadata } from './modals.js';
@@ -30,7 +30,8 @@ window.checkCSV = checkCSV;
 window.importCSV = importCSV;
 window.editArticle = editArticle;
 window.saveArticle = saveArticle;
-window.toggleSelection = toggleSelection;
+window.saveArticle = saveArticle;
+window.handleToggleSelection = handleToggleSelection;
 window.exportExcelAll = exportExcelAll;
 window.exportExcelBookmarks = exportExcelBookmarks;
 window.exportExcel = exportExcel;

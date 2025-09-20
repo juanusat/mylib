@@ -33,7 +33,13 @@ def update_article(article_id):
     try:
         data = request.json
         Article.update(article_id, data)
-        return jsonify({'message': 'Article updated successfully'})
+        
+        # Obtener el artículo actualizado para devolverlo
+        updated_article = Article.get_by_id(article_id)
+        if updated_article:
+            return jsonify(Article.to_dict(updated_article))
+        else:
+            return jsonify({'message': 'Article updated successfully'})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 

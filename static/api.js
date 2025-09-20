@@ -239,40 +239,122 @@ export async function saveArticle() {
     }
 }
 
-export async function toggleSelection(id) {
+// Función para manejar clicks en botón de selección
+export async function handleToggleSelection(id) {
     try {
-        const response = await fetch(`/api/articles/${id}/toggle-selection`, {
+        // Obtener elementos del botón
+        const button = document.getElementById(`toggle-btn-${id}`);
+        const icon = document.getElementById(`toggle-icon-${id}`);
+        const loading = document.getElementById(`toggle-loading-${id}`);
+        
+        if (!button || !icon || !loading) {
+            throw new Error('No se encontraron los elementos del botón');
+        }
+        
+        // Obtener el estado actual desde los datos en memoria
+        const article = allArticles.find(a => a.id === id);
+        if (!article) {
+            throw new Error('No se encontró el artículo en la lista');
+        }
+        
+        const currentState = article.seleccionado;
+        const newSelectionState = !currentState;
+        
+        // Mostrar estado de carga
+        setToggleButtonLoading(id, true);
+        
+        // Enviar la actualización al servidor
+        const response = await fetch(`/api/articles/${id}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
-            }
+            },
+            body: JSON.stringify({
+                ...article,
+                seleccionado: newSelectionState
+            })
         });
 
         if (response.ok) {
-            const data = await response.json();
+            // Actualizar el estado del botón
+            updateToggleButtonState(id, newSelectionState);
             
-            // Update the checkbox in the table
-            const checkbox = document.querySelector(`input[data-id="${id}"]`);
-            if (checkbox) {
-                checkbox.checked = data.seleccionado;
+            // Actualizar el checkbox en el modal si está abierto
+            const modalCheckbox = document.getElementById('seleccionado');
+            const editModal = document.getElementById('editModal');
+            const articleIdInput = document.getElementById('articleId');
+            
+            if (modalCheckbox && editModal && !editModal.classList.contains('hidden') && 
+                articleIdInput && parseInt(articleIdInput.value) === id) {
+                modalCheckbox.checked = newSelectionState;
             }
             
-            // Update in allArticles array
-            const article = allArticles.find(a => a.id === id);
-            if (article) {
-                article.seleccionado = data.seleccionado;
+            // Confirmar la actualización en los arrays de datos
+            const articleInArray = allArticles.find(a => a.id === id);
+            if (articleInArray) {
+                articleInArray.seleccionado = newSelectionState;
             }
             
-            // Update in filteredArticles array
             const filteredArticle = filteredArticles.find(a => a.id === id);
             if (filteredArticle) {
-                filteredArticle.seleccionado = data.seleccionado;
+                filteredArticle.seleccionado = newSelectionState;
             }
         } else {
-            console.error('Error toggling selection');
+            const errorData = await response.json();
+            console.error('Error toggling selection:', errorData);
+            showMessage('Error al cambiar la selección del artículo', 'error');
         }
     } catch (error) {
         console.error('Error toggling selection:', error);
+        showMessage('Error al cambiar la selección del artículo', 'error');
+    } finally {
+        // Siempre quitar el estado de carga
+        setToggleButtonLoading(id, false);
+    }
+}
+
+// Función para mostrar/ocultar estado de carga en el botón
+function setToggleButtonLoading(id, loading) {
+    const button = document.getElementById(`toggle-btn-${id}`);
+    const icon = document.getElementById(`toggle-icon-${id}`);
+    const loadingSpinner = document.getElementById(`toggle-loading-${id}`);
+    
+    if (button && icon && loadingSpinner) {
+        if (loading) {
+            button.disabled = true;
+            button.classList.add('opacity-75', 'cursor-not-allowed');
+            icon.classList.add('hidden');
+            loadingSpinner.classList.remove('hidden');
+        } else {
+            button.disabled = false;
+            button.classList.remove('opacity-75', 'cursor-not-allowed');
+            icon.classList.remove('hidden');
+            loadingSpinner.classList.add('hidden');
+        }
+    }
+}
+
+// Función para actualizar el estado visual del botón
+function updateToggleButtonState(id, isSelected) {
+    const button = document.getElementById(`toggle-btn-${id}`);
+    const icon = document.getElementById(`toggle-icon-${id}`);
+    
+    if (button && icon) {
+        // Remover todas las clases de estado
+        button.classList.remove(
+            'bg-green-500', 'hover:bg-green-600', 'text-white', 'border-green-500',
+            'bg-gray-200', 'hover:bg-gray-300', 'text-gray-600', 'border-gray-300'
+        );
+        
+        if (isSelected) {
+            button.classList.add('bg-green-500', 'hover:bg-green-600', 'text-white', 'border-green-500');
+            button.title = 'Artículo seleccionado - Click para deseleccionar';
+            icon.textContent = '✓';
+        } else {
+            button.classList.add('bg-gray-200', 'hover:bg-gray-300', 'text-gray-600', 'border-gray-300');
+            button.title = 'Artículo no seleccionado - Click para seleccionar';
+            icon.textContent = '○';
+        }
     }
 }
 
