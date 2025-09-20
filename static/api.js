@@ -1,7 +1,7 @@
 import { setAllArticles, setReadonlyFields, setColumnMetadata, allArticles, filteredArticles, setFilteredArticles } from './config.js';
 import { renderTable } from './table.js';
 import { renderDocumentSections } from './documents.js';
-import { showDuplicateConfirmation, showMessage } from './modals.js';
+import { showDuplicateConfirmation, showMessage, showModalMessage, clearModalMessage } from './modals.js';
 import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
 
 // Funciones para manejar el estado de carga del botón
@@ -167,6 +167,9 @@ export async function editArticle(id) {
         await loadFieldMetadata();
         configureReadonlyFields();
         renderDocumentSections(article);
+        
+        // Clear any previous modal messages
+        clearModalMessage();
         
         // Show modal
         document.getElementById('editModal').classList.remove('hidden');
@@ -340,22 +343,22 @@ export async function uploadDocument(sectionId, articleId, docType) {
     formData.append('doc_type', docType);
     
     try {
-        const response = await fetch(`/api/articles/${articleId}/upload-document`, {
+        const response = await fetch(`/api/articles/${articleId}/documents`, {
             method: 'POST',
             body: formData
         });
         
         if (response.ok) {
-            showMessage('Documento subido correctamente', 'success');
+            showModalMessage('Documento subido correctamente', 'success');
             // Refresh article data in modal
             await refreshArticleInModal(articleId);
         } else {
             const error = await response.json();
-            showMessage(error.message || 'Error al subir el documento', 'error');
+            showModalMessage(error.error || 'Error al subir el documento', 'error');
         }
     } catch (error) {
         console.error('Error uploading document:', error);
-        showMessage('Error al subir el documento', 'error');
+        showModalMessage('Error al subir el documento', 'error');
     }
 }
 
@@ -365,21 +368,21 @@ export async function deleteDocument(articleId, docType) {
     }
     
     try {
-        const response = await fetch(`/api/articles/${articleId}/delete-document/${docType}`, {
+        const response = await fetch(`/api/articles/${articleId}/documents/${docType}`, {
             method: 'DELETE'
         });
         
         if (response.ok) {
-            showMessage('Documento eliminado correctamente', 'success');
+            showModalMessage('Documento eliminado correctamente', 'success');
             // Refresh article data in modal
             await refreshArticleInModal(articleId);
         } else {
             const error = await response.json();
-            showMessage(error.message || 'Error al eliminar el documento', 'error');
+            showModalMessage(error.error || 'Error al eliminar el documento', 'error');
         }
     } catch (error) {
         console.error('Error deleting document:', error);
-        showMessage('Error al eliminar el documento', 'error');
+        showModalMessage('Error al eliminar el documento', 'error');
     }
 }
 

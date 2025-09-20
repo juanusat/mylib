@@ -80,6 +80,29 @@ export function showMessage(message, type) {
     }, 5000);
 }
 
+export function showModalMessage(message, type) {
+    const messageDiv = document.getElementById('modalMessage');
+    if (messageDiv) {
+        messageDiv.className = `p-3 rounded ${type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-red-100 text-red-700 border border-red-200'}`;
+        messageDiv.textContent = message;
+        messageDiv.classList.remove('hidden');
+        
+        setTimeout(() => {
+            messageDiv.classList.add('hidden');
+        }, 5000);
+    } else {
+        // Fallback a showMessage si no existe modalMessage
+        showMessage(message, type);
+    }
+}
+
+export function clearModalMessage() {
+    const messageDiv = document.getElementById('modalMessage');
+    if (messageDiv) {
+        messageDiv.classList.add('hidden');
+    }
+}
+
 export function showInstructionsMessage(message, type) {
     const messageDiv = document.getElementById('instructionsMessage');
     messageDiv.className = `p-3 rounded ${type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 

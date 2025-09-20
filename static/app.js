@@ -2,7 +2,7 @@ import { setAllArticles, setFilteredArticles, allArticles } from './config.js';
 import { loadFieldMetadata, loadArticles, checkCSV, importCSV, editArticle, saveArticle, toggleSelection, exportExcelAll, exportExcelBookmarks, uploadDocument, deleteDocument, refreshArticleInModal, setImportButtonLoading } from './api.js';
 import { renderTable, goToPage, changeItemsPerPage, filterArticles, updateColumns, toggleColumnSettings, toggleExportDropdown, downloadExcelFile, exportExcel } from './table.js';
 import { viewDocument, openDocumentSidebar, createDocumentSidebar, closeDocumentSidebar, openInNewTab, toggleFullscreen, getDocumentByType, renderDocumentSections, renderDocumentSection, showUploadForm, cancelUpload } from './documents.js';
-import { showDuplicateConfirmation, closeConfirmModal, proceedWithImport, forceImport, closeModal, showMessage, showInstructionsMessage, openInstructionsModal, generateInstructionsPrompt, regenerateInstructions, copyInstructions, closeInstructionsModal, loadColumnMetadata } from './modals.js';
+import { showDuplicateConfirmation, closeConfirmModal, proceedWithImport, forceImport, closeModal, showMessage, showModalMessage, clearModalMessage, showInstructionsMessage, openInstructionsModal, generateInstructionsPrompt, regenerateInstructions, copyInstructions, closeInstructionsModal, loadColumnMetadata } from './modals.js';
 import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
 
 // Load articles on page load
@@ -53,6 +53,8 @@ window.closeConfirmModal = closeConfirmModal;
 window.proceedWithImport = proceedWithImport;
 window.forceImport = forceImport;
 window.closeModal = closeModal;
+window.showModalMessage = showModalMessage;
+window.clearModalMessage = clearModalMessage;
 window.openInstructionsModal = openInstructionsModal;
 window.regenerateInstructions = regenerateInstructions;
 window.copyInstructions = copyInstructions;
