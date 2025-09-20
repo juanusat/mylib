@@ -2,7 +2,7 @@
 export let allArticles = [];
 export let filteredArticles = [];
 export let currentPage = 1;
-export let itemsPerPage = 25;
+export let itemsPerPage = 10;
 export let readonlyFields = []; // Fields that are read-only (imported from Scopus)
 export let visibleColumns = {
     id: true,
