@@ -1,5 +1,5 @@
 import { setAllArticles, setReadonlyFields, setColumnMetadata, allArticles, filteredArticles, setFilteredArticles } from './config.js';
-import { renderTable } from './table.js';
+import { renderTable, downloadExcelFile } from './table.js';
 import { renderDocumentSections } from './documents.js';
 import { showDuplicateConfirmation, showMessage, showModalMessage, clearModalMessage } from './modals.js';
 import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
@@ -371,7 +371,7 @@ export function exportExcelAll() {
             return response.blob();
         })
         .then(blob => {
-            downloadExcelFile(blob, 'articulos-todos');
+            downloadExcelFile(blob, 'matriz-analisis-todos');
         })
         .catch(error => {
             console.error('Error:', error);
@@ -392,7 +392,7 @@ export function exportExcelBookmarks() {
             return response.blob();
         })
         .then(blob => {
-            downloadExcelFile(blob, 'articulos-marcadores');
+            downloadExcelFile(blob, 'matriz-analisis-marcadores');
         })
         .catch(error => {
             console.error('Error:', error);
