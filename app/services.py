@@ -17,7 +17,17 @@ class CSVService:
         if not file.filename.endswith('.csv'):
             raise ValueError('Formato de archivo inválido')
         
-        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+        content = file.stream.read()
+        
+        try:
+            decoded_content = content.decode('utf-8-sig')
+        except UnicodeDecodeError:
+            try:
+                decoded_content = content.decode('utf-8')
+            except UnicodeDecodeError:
+                decoded_content = content.decode('UTF8')
+        
+        stream = io.StringIO(decoded_content, newline=None)
         csv_reader = csv.DictReader(stream)
         
         dois_in_csv = []
@@ -69,7 +79,21 @@ class CSVService:
         if not file.filename.endswith('.csv'):
             raise ValueError('Formato de archivo inválido')
         
-        stream = io.StringIO(file.stream.read().decode("UTF8"), newline=None)
+        # Leer el contenido del archivo y manejar UTF-8 BOM
+        content = file.stream.read()
+        
+        # Intentar decodificar como UTF-8 con BOM primero
+        try:
+            decoded_content = content.decode('utf-8-sig')
+        except UnicodeDecodeError:
+            # Si falla, intentar UTF-8 normal
+            try:
+                decoded_content = content.decode('utf-8')
+            except UnicodeDecodeError:
+                # Como último recurso, intentar con la codificación original
+                decoded_content = content.decode('UTF8')
+        
+        stream = io.StringIO(decoded_content, newline=None)
         csv_reader = csv.DictReader(stream)
         
         imported_count = 0
