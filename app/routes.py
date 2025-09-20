@@ -113,6 +113,11 @@ def export_excel():
 @main_bp.route('/api/export-excel-bookmarks', methods=['GET'])
 def export_excel_bookmarks():
     try:
+        # Verificar si hay artículos marcados antes de crear el archivo
+        bookmarks = Article.get_bookmarks()
+        if not bookmarks:
+            return jsonify({'error': 'No hay artículos marcados como favoritos'}), 404
+        
         temp_file_path, filename = ExcelService.create_excel_export_bookmarks()
         
         return send_file(
