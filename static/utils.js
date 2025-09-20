@@ -30,24 +30,42 @@ export function addPasteEventListeners() {
     modalFieldIds.forEach(fieldId => {
         const field = document.getElementById(fieldId);
         if (field) {
-            field.addEventListener('paste', function(event) {
-                event.preventDefault();
-                
-                const pastedText = (event.clipboardData || window.clipboardData).getData('text');
-                
-                const cleanedText = cleanPastedText(pastedText);
-                
-                const startPos = field.selectionStart;
-                const endPos = field.selectionEnd;
-                const currentValue = field.value;
-                
-                field.value = currentValue.substring(0, startPos) + cleanedText + currentValue.substring(endPos);
-                
-                const newCursorPos = startPos + cleanedText.length;
-                field.setSelectionRange(newCursorPos, newCursorPos);
-            });
+            // Remove any existing paste event listeners to avoid duplicates
+            field.removeEventListener('paste', handlePasteEvent);
+            
+            // Add the paste event listener
+            field.addEventListener('paste', handlePasteEvent);
         }
     });
+}
+
+// Separate handler function to avoid duplicates and improve performance
+function handlePasteEvent(event) {
+    // Prevent default paste behavior and stop propagation
+    event.preventDefault();
+    event.stopPropagation();
+    
+    try {
+        const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+        
+        const cleanedText = cleanPastedText(pastedText);
+        
+        const field = event.target;
+        const startPos = field.selectionStart || 0;
+        const endPos = field.selectionEnd || 0;
+        const currentValue = field.value || '';
+        
+        field.value = currentValue.substring(0, startPos) + cleanedText + currentValue.substring(endPos);
+        
+        const newCursorPos = startPos + cleanedText.length;
+        field.setSelectionRange(newCursorPos, newCursorPos);
+        
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        
+    } catch (error) {
+        console.error('Error handling paste event:', error);
+        event.target.value = event.target.value;
+    }
 }
 
 export function getFieldValue(fieldId) {
