@@ -88,11 +88,13 @@
             <div class="flex items-center space-x-4">
                 <input type="file" id="csvFile" accept=".csv" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100">
                 <button id="importButton" onclick="checkCSV()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors">
-                    <span id="importButtonText">
-                        <i class="fas fa-file-import"></i> Importar
+                    <span id="importButtonText" class="flex items-center space-x-2">
+                        <i class="fas fa-file-import"></i>
+                        <span>Importar</span>
                     </span>
-                    <span id="importButtonLoading" class="hidden">
-                        <i class="fas fa-spinner fa-spin"></i> Procesando...
+                    <span id="importButtonLoading" class="hidden flex items-center space-x-2">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Procesando...</span>
                     </span>
                 </button>
             </div>
