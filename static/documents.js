@@ -132,15 +132,28 @@ export function toggleFullscreen() {
 
 export function getDocumentByType(documentos, type) {
     if (!documentos || !Array.isArray(documentos)) return null;
+
+    const candidates = [];
     
     for (const doc of documentos) {
         if (type === 'original' && doc.nombre_archivo_original) {
-            return doc;
+            candidates.push(doc);
         } else if (type === 'translated' && doc.nombre_archivo_traducido) {
-            return doc;
+            candidates.push(doc);
         }
     }
-    return null;
+    
+    if (candidates.length === 0) return null;
+    
+    if (candidates.length === 1) return candidates[0];
+    
+    if (type === 'original') {
+        const originalOnly = candidates.find(doc => !doc.nombre_archivo_traducido);
+        return originalOnly || candidates[0];
+    } else {
+        const withOriginal = candidates.find(doc => doc.nombre_archivo_original);
+        return withOriginal || candidates[0];
+    }
 }
 
 export function renderDocumentSections(article) {

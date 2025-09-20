@@ -258,6 +258,7 @@ function getDocumentsInfo(article) {
     
     let buttons = [];
     
+    // Primero buscar y añadir el botón del documento original
     for (const doc of article.documentos) {
         if (doc.nombre_archivo_original) {
             buttons.push(`
@@ -268,8 +269,12 @@ function getDocumentsInfo(article) {
                     <i class="fas fa-file-pdf"></i>
                 </button>
             `);
+            break; // Solo añadir el primer documento original encontrado
         }
-        
+    }
+    
+    // Luego buscar y añadir el botón del documento en español
+    for (const doc of article.documentos) {
         if (doc.nombre_archivo_traducido) {
             buttons.push(`
                 <button onclick="event.preventDefault(); event.stopPropagation(); viewDocument('${doc.nombre_archivo_traducido}', event)" 
@@ -279,6 +284,7 @@ function getDocumentsInfo(article) {
                     <i class="fas fa-file-pdf"></i>
                 </button>
             `);
+            break; // Solo añadir el primer documento traducido encontrado
         }
     }
     
