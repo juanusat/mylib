@@ -79,7 +79,7 @@ def import_csv():
             return jsonify({'error': 'No file provided'}), 400
         
         file = request.files['file']
-        force_import = request.form.get('force_import', 'false').lower() == 'true'
+        force_import = request.form.get('force', 'false').lower() == 'true'
         
         result = CSVService.import_csv_file(file, force_import)
         return jsonify(result)

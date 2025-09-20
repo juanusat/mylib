@@ -1,4 +1,4 @@
-import { setAllArticles, setReadonlyFields, setColumnMetadata, allArticles, filteredArticles } from './config.js';
+import { setAllArticles, setReadonlyFields, setColumnMetadata, allArticles, filteredArticles, setFilteredArticles } from './config.js';
 import { renderTable } from './table.js';
 import { renderDocumentSections } from './documents.js';
 import { showDuplicateConfirmation, showMessage } from './modals.js';
@@ -81,7 +81,9 @@ export async function importCSV(forceImport = false) {
         
         if (data.status === 'success') {
             showMessage(data.message, 'success');
-            loadArticles();
+            await loadArticles();
+            setFilteredArticles([...allArticles]);
+            renderTable();
         } else {
             showMessage(data.message, 'error');
         }

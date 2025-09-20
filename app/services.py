@@ -37,18 +37,32 @@ class CSVService:
                 if doi in existing_dois:
                     existing_articles.append({
                         'doi': doi,
-                        'titulo': existing_dois[doi]
+                        'titulo_original': existing_dois[doi]
                     })
                 else:
                     new_articles.append({'doi': doi})
         
-        return {
-            'total_in_csv': len(dois_in_csv),
-            'existing_count': len(existing_articles),
-            'new_count': len(new_articles),
-            'existing_articles': existing_articles,
-            'has_duplicates': len(existing_articles) > 0
-        }
+        # Formato de respuesta que espera el frontend
+        if len(existing_articles) > 0:
+            return {
+                'status': 'duplicates_found',
+                'total_in_csv': len(dois_in_csv),
+                'existing_count': len(existing_articles),
+                'new_count': len(new_articles),
+                'existing_articles': existing_articles,
+                'has_duplicates': True,
+                'message': f'Se encontraron {len(existing_articles)} artículos que ya existen en la base de datos.'
+            }
+        else:
+            return {
+                'status': 'ready_to_import',
+                'total_in_csv': len(dois_in_csv),
+                'existing_count': len(existing_articles),
+                'new_count': len(new_articles),
+                'existing_articles': existing_articles,
+                'has_duplicates': False,
+                'message': f'Archivo validado correctamente. {len(new_articles)} artículos nuevos listos para importar.'
+            }
     
     @staticmethod
     def import_csv_file(file, force_import=False):
@@ -94,7 +108,12 @@ class CSVService:
         if skipped_count > 0:
             message += f', {skipped_count} omitidos (ya existían)'
         
-        return {'message': message}
+        return {
+            'status': 'success',
+            'message': message,
+            'imported_count': imported_count,
+            'skipped_count': skipped_count
+        }
 
 class ExcelService:
     # Configuración común para todas las exportaciones
