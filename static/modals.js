@@ -205,6 +205,7 @@ campos_analisis:
 6. **Traducciones**: Para campos de traducción, mantenga el sentido original pero use español claro y académico
 7. **Realismo**: Se penaliza si completa información que el documento no mencione, es preferible indicar que no hay información al respecto en vez de inventarla.
 8. **Redacción**: Use un lenguaje no tan técnico, debe ser comprensible, manteniendo un tono académico. Las respuestas se dan en bloques de código de texto plano (nada de formato).
+9. **Citas**: Puedes mencionar al autor y año si el caso lo amerita, pero no coloques el número de página como parte de ninguna referencia.
 
 ## FORMATO DE RESPUESTA:
 Para cada campo listado arriba, proporcione su respuesta en el siguiente formato:
