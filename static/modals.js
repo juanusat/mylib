@@ -147,6 +147,9 @@ campos_analisis:
         if (column.formato) {
             prompt += `    formato: "${column.formato}"\n`;
         }
+        if (column.max && column.max > 0) {
+            prompt += `    maximo_caracteres: ${column.max}\n`;
+        }
         prompt += `\n`;
     }
 
@@ -158,11 +161,12 @@ campos_analisis:
 
 1. **Lectura completa**: Lea todo el artículo antes de comenzar el análisis
 2. **Precisión**: Sea específico y preciso en sus respuestas
-3. **Información faltante**: Si alguna información no está disponible, indique "No especificado" o "No disponible"
-4. **Objetividad**: Base sus respuestas únicamente en el contenido del artículo
-5. **Traducciones**: Para campos de traducción, mantenga el sentido original pero use español claro y académico
-6. **Realismo**: Se penaliza si completa información que el documento no mencione, es preferible indicar que no hay información al respecto en vez de inventarla.
-7. **Redacción**: Use un lenguaje no tan técnico, debe ser comprensible, manteniendo un tono académico.
+3. **Límites de caracteres**: Respete el número máximo de caracteres indicado para cada campo cuando esté especificado
+4. **Información faltante**: Si alguna información no está disponible, indique "No especificado" o "No disponible"
+5. **Objetividad**: Base sus respuestas únicamente en el contenido del artículo
+6. **Traducciones**: Para campos de traducción, mantenga el sentido original pero use español claro y académico
+7. **Realismo**: Se penaliza si completa información que el documento no mencione, es preferible indicar que no hay información al respecto en vez de inventarla.
+8. **Redacción**: Use un lenguaje no tan técnico, debe ser comprensible, manteniendo un tono académico.
 
 ## FORMATO DE RESPUESTA:
 Para cada campo listado arriba, proporcione su respuesta en el siguiente formato:

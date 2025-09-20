@@ -48,5 +48,6 @@ CREATE TABLE metadata_columnas (
     dato_fijo varchar(500),
     formato varchar(100),
     idioma_deseado_redactar varchar(100),
-    id_from_backup varchar(200)
+    id_from_backup varchar(200),
+    max INTEGER
 );

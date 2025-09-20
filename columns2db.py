@@ -81,8 +81,8 @@ def insert_column_data(cursor, rows):
     try:
         insert_query = """
         INSERT INTO metadata_columnas 
-        (nro_columna, columna, explicacion, formato, dato_fijo, idioma_deseado_redactar, id_from_backup)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
+        (nro_columna, columna, explicacion, formato, dato_fijo, idioma_deseado_redactar, id_from_backup, max)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
         """
         
         inserted_count = 0
@@ -95,6 +95,7 @@ def insert_column_data(cursor, rows):
             dato_fijo = ""
             idioma_deseado = ""
             id_from_backup = ""
+            max_value = None
             
             try:
                 if len(row) > 0 and row[0].isdigit():
@@ -118,6 +119,9 @@ def insert_column_data(cursor, rows):
                 if len(row) > 6:
                     id_from_backup = row[6]
                 
+                if len(row) > 9 and row[9] and row[9].isdigit():
+                    max_value = int(row[9])
+                
                 if nro_columna is not None and columna:
                     cursor.execute(insert_query, (
                         nro_columna,
@@ -126,7 +130,8 @@ def insert_column_data(cursor, rows):
                         formato,
                         dato_fijo,
                         idioma_deseado,
-                        id_from_backup
+                        id_from_backup,
+                        max_value
                     ))
                     inserted_count += 1
                     print(f"  - Insertada fila {inserted_count}: {nro_columna} - {columna}")

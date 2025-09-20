@@ -309,7 +309,7 @@ class ColumnMetadata:
     def get_all_metadata():
         query = '''
             SELECT nro_columna, columna, explicacion, formato, dato_fijo, 
-                   idioma_deseado_redactar, id_from_backup 
+                   idioma_deseado_redactar, id_from_backup, max 
             FROM metadata_columnas 
             ORDER BY nro_columna
         '''
@@ -324,7 +324,8 @@ class ColumnMetadata:
                 'formato': row[3],
                 'dato_fijo': row[4],
                 'idioma_deseado_redactar': row[5],
-                'id_from_backup': row[6]
+                'id_from_backup': row[6],
+                'max': row[7]
             })
         
         return result
