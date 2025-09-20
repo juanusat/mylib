@@ -2,7 +2,7 @@ import { setAllArticles, setReadonlyFields, setColumnMetadata, allArticles, filt
 import { renderTable, downloadExcelFile } from './table.js';
 import { renderDocumentSections } from './documents.js';
 import { showDuplicateConfirmation, showMessage, showModalMessage, clearModalMessage, closeModal } from './modals.js';
-import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
+import { setFieldValue, configureReadonlyFields, getFieldValue, addPasteEventListeners } from './utils.js';
 
 // Funciones para manejar el estado de carga del botón
 export function setImportButtonLoading(loading) {
@@ -167,6 +167,9 @@ export async function editArticle(id) {
         await loadFieldMetadata();
         configureReadonlyFields();
         renderDocumentSections(article);
+        
+        // Add paste event listeners to clean double asterisks
+        addPasteEventListeners();
         
         // Clear any previous modal messages
         clearModalMessage();

@@ -7,6 +7,49 @@ export function setFieldValue(fieldId, value) {
     }
 }
 
+// Function to remove double asterisks from pasted text
+export function cleanPastedText(text) {
+    return text.replace(/\*\*/g, '');
+}
+
+// Function to add paste event listeners to modal fields
+export function addPasteEventListeners() {
+    // Array of all field IDs in the edit modal
+    const modalFieldIds = [
+        'edit_autor', 'edit_anio', 'edit_base_datos', 'edit_doi', 'edit_eid',
+        'edit_nombre_revista', 'edit_quartil_revista', 'edit_titulo_original',
+        'titulo_espanol', 'edit_abstract', 'resumen', 'edit_keywords_autor',
+        'edit_keywords_indexed', 'problema_articulo', 'pregunta_investigacion',
+        'tipo_investigacion', 'edit_datos_estadisticos', 'edit_objetivo_original',
+        'objetivo_espanol', 'objetivo_reescrito', 'justificacion', 'hipotesis',
+        'edit_estudios_previos', 'edit_poblacion_muestra_datos', 'edit_recoleccion_datos',
+        'resultados', 'conclusiones', 'edit_discusion', 'edit_trabajos_futuros',
+        'edit_enlace'
+    ];
+
+    modalFieldIds.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            field.addEventListener('paste', function(event) {
+                event.preventDefault();
+                
+                const pastedText = (event.clipboardData || window.clipboardData).getData('text');
+                
+                const cleanedText = cleanPastedText(pastedText);
+                
+                const startPos = field.selectionStart;
+                const endPos = field.selectionEnd;
+                const currentValue = field.value;
+                
+                field.value = currentValue.substring(0, startPos) + cleanedText + currentValue.substring(endPos);
+                
+                const newCursorPos = startPos + cleanedText.length;
+                field.setSelectionRange(newCursorPos, newCursorPos);
+            });
+        }
+    });
+}
+
 export function getFieldValue(fieldId) {
     const field = document.getElementById(fieldId);
     return field ? field.value : '';
