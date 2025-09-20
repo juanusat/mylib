@@ -249,9 +249,10 @@ function getDocumentsInfo(article) {
     for (const doc of article.documentos) {
         if (doc.nombre_archivo_original) {
             buttons.push(`
-                <button onclick="viewDocument('${doc.nombre_archivo_original}', event)" 
+                <button onclick="event.preventDefault(); event.stopPropagation(); viewDocument('${doc.nombre_archivo_original}', event)" 
                         class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs" 
-                        title="Ver documento original">
+                        title="Ver documento original"
+                        type="button">
                     <i class="fas fa-file-pdf"></i>
                 </button>
             `);
@@ -259,9 +260,10 @@ function getDocumentsInfo(article) {
         
         if (doc.nombre_archivo_traducido) {
             buttons.push(`
-                <button onclick="viewDocument('${doc.nombre_archivo_traducido}', event)" 
+                <button onclick="event.preventDefault(); event.stopPropagation(); viewDocument('${doc.nombre_archivo_traducido}', event)" 
                         class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" 
-                        title="Ver documento en español">
+                        title="Ver documento en español"
+                        type="button">
                     <i class="fas fa-file-pdf"></i>
                 </button>
             `);

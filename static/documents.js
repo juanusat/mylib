@@ -1,4 +1,10 @@
 export function viewDocument(filename, event) {
+    // Prevenir comportamiento por defecto del evento
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+    
     if (!filename) {
         console.error('No filename provided');
         return;
@@ -168,14 +174,16 @@ export function renderDocumentSection(sectionId, article, docType) {
                             <span class="font-medium text-gray-800 truncate">${filename}</span>
                         </div>
                         <div class="flex space-x-1 flex-shrink-0 ml-2">
-                            <button onclick="viewDocument('${filename}', event)" 
+                            <button onclick="event.preventDefault(); event.stopPropagation(); viewDocument('${filename}', event)" 
                                     class="bg-green-500 hover:bg-green-600 text-white px-1 py-1 rounded text-xs" 
-                                    title="Ver documento">
+                                    title="Ver documento"
+                                    type="button">
                                 <i class="fas fa-eye"></i>
                             </button>
                             <button onclick="deleteDocument(${article.id}, '${docType}')" 
                                     class="bg-red-500 hover:bg-red-600 text-white px-1 py-1 rounded text-xs" 
-                                    title="Eliminar documento">
+                                    title="Eliminar documento"
+                                    type="button">
                                 <i class="fas fa-trash"></i>
                             </button>
                         </div>
@@ -216,11 +224,13 @@ export function showUploadForm(sectionId, articleId, docType) {
             </div>
             <div class="flex space-x-2">
                 <button onclick="uploadDocument('${sectionId}', ${articleId}, '${docType}')" 
-                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm flex-1">
+                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-2 rounded text-sm flex-1"
+                        type="button">
                     <i class="fas fa-upload"></i> Subir
                 </button>
                 <button onclick="cancelUpload('${sectionId}', ${articleId}, '${docType}')" 
-                        class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm flex-1">
+                        class="bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded text-sm flex-1"
+                        type="button">
                     Cancelar
                 </button>
             </div>
