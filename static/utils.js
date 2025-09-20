@@ -4,7 +4,95 @@ export function setFieldValue(fieldId, value) {
     const field = document.getElementById(fieldId);
     if (field) {
         field.value = value || '';
+        // Update character counter after setting value
+        updateCharacterCounter(fieldId);
     }
+}
+
+// Character limits based on database schema
+export const FIELD_CHARACTER_LIMITS = {
+    'edit_autor': 4000,
+    'edit_nombre_revista': 500,
+    'edit_quartil_revista': 50,
+    'edit_titulo_original': 4000,
+    'titulo_espanol': 4000,
+    'edit_abstract': 4000,
+    'resumen': 4000,
+    'edit_keywords_autor': 4000,
+    'edit_keywords_indexed': 4000,
+    'problema_articulo': 4000,
+    'edit_datos_estadisticos': 4000,
+    'pregunta_investigacion': 4000,
+    'edit_objetivo_original': 4000,
+    'objetivo_espanol': 4000,
+    'objetivo_reescrito': 4000,
+    'justificacion': 4000,
+    'hipotesis': 4000,
+    'tipo_investigacion': 500,
+    'edit_estudios_previos': 4000,
+    'edit_poblacion_muestra_datos': 4000,
+    'edit_recoleccion_datos': 4000,
+    'resultados': 4000,
+    'conclusiones': 4000,
+    'edit_discusion': 4000,
+    'edit_trabajos_futuros': 4000,
+    'edit_enlace': 500,
+    'edit_base_datos': 100,
+    'edit_doi': 300,
+    'edit_eid': 100,
+    'edit_anio': null // numeric field, no character limit
+};
+
+// Function to update character counter for a specific field
+export function updateCharacterCounter(fieldId) {
+    const field = document.getElementById(fieldId);
+    const counter = document.getElementById(`${fieldId}_counter`);
+    
+    if (field && counter) {
+        const currentLength = field.value ? field.value.length : 0;
+        const maxLength = FIELD_CHARACTER_LIMITS[fieldId];
+        
+        if (maxLength !== null) {
+            counter.textContent = `${currentLength} / ${maxLength}`;
+            
+            // Add warning class if over limit
+            if (currentLength > maxLength) {
+                counter.classList.add('over-limit', 'text-red-600', 'font-semibold');
+                counter.classList.remove('text-gray-500');
+                field.classList.add('field-over-limit', 'border-red-500');
+                field.classList.remove('border-gray-300');
+            } else {
+                counter.classList.remove('over-limit', 'text-red-600', 'font-semibold');
+                counter.classList.add('text-gray-500');
+                field.classList.remove('field-over-limit', 'border-red-500');
+                if (!field.classList.contains('scopus-imported-field')) {
+                    field.classList.add('border-gray-300');
+                }
+            }
+        } else {
+            counter.textContent = `${currentLength}`;
+            counter.classList.add('text-gray-500');
+        }
+    }
+}
+
+// Function to add character counters and input listeners to modal fields
+export function addCharacterCounters() {
+    Object.keys(FIELD_CHARACTER_LIMITS).forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        if (field) {
+            // Add input event listener for real-time counting
+            field.addEventListener('input', () => updateCharacterCounter(fieldId));
+            field.addEventListener('keyup', () => updateCharacterCounter(fieldId));
+            field.addEventListener('paste', () => {
+                // Update counter after paste event is processed
+                setTimeout(() => updateCharacterCounter(fieldId), 10);
+            });
+            
+            // Initial counter update
+            updateCharacterCounter(fieldId);
+        }
+    });
 }
 
 // Function to remove double asterisks from pasted text

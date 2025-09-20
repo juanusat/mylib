@@ -60,6 +60,29 @@
             box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.2) !important;
         }
         
+        /* Character counter styles */
+        .character-counter {
+            font-size: 0.75rem;
+            margin-top: 0.25rem;
+            transition: color 0.2s ease;
+        }
+        
+        .character-counter.over-limit {
+            color: #dc2626 !important;
+            font-weight: 600;
+        }
+        
+        .field-over-limit {
+            border-color: #dc2626 !important;
+            background-color: #fef2f2 !important;
+            box-shadow: 0 0 0 1px #dc2626 !important;
+        }
+        
+        .field-over-limit:focus {
+            border-color: #b91c1c !important;
+            box-shadow: 0 0 0 2px rgba(220, 38, 38, 0.2) !important;
+        }
+        
         @media (max-width: 768px) {
             #documentSidebar.w-1\/2 {
                 width: 100% !important;
@@ -398,22 +421,27 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Autor</label>
                                         <input type="text" id="edit_autor" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field">
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_autor_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Año</label>
                                         <input type="number" id="edit_anio" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field">
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_anio_counter">-</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Base de Datos</label>
                                         <input type="text" id="edit_base_datos" class="w-full p-2 border border-gray-300 rounded-md">
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_base_datos_counter">0 / 100</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">DOI</label>
                                         <input type="text" id="edit_doi" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field">
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_doi_counter">0 / 300</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">EID</label>
                                         <input type="text" id="edit_eid" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field">
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_eid_counter">0 / 100</div>
                                     </div>
                                 </div>
                             </div>
@@ -425,10 +453,12 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Nombre de la Revista</label>
                                         <input type="text" id="edit_nombre_revista" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field">
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_nombre_revista_counter">0 / 500</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Quartil de la Revista</label>
                                         <input type="text" id="edit_quartil_revista" class="w-full p-2 border border-gray-300 rounded-md">
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_quartil_revista_counter">0 / 50</div>
                                     </div>
                                 </div>
                             </div>
@@ -440,10 +470,12 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Título Original</label>
                                         <textarea id="edit_titulo_original" rows="2" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_titulo_original_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Título Español</label>
                                         <textarea id="titulo_espanol" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="titulo_espanol_counter">0 / 4000</div>
                                     </div>
                                 </div>
                             </div>
@@ -455,10 +487,12 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Abstract</label>
                                         <textarea id="edit_abstract" rows="4" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_abstract_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Resumen</label>
                                         <textarea id="resumen" rows="4" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="resumen_counter">0 / 4000</div>
                                     </div>
                                 </div>
                             </div>
@@ -470,10 +504,12 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Keywords del Autor</label>
                                         <textarea id="edit_keywords_autor" rows="3" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_keywords_autor_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Keywords Indexados</label>
                                         <textarea id="edit_keywords_indexed" rows="3" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_keywords_indexed_counter">0 / 4000</div>
                                     </div>
                                 </div>
                             </div>
@@ -485,18 +521,22 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Problema a Solucionar</label>
                                         <textarea id="problema_articulo" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="problema_articulo_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Pregunta de Investigación</label>
                                         <textarea id="pregunta_investigacion" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="pregunta_investigacion_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Tipo de Investigación</label>
                                         <input type="text" id="tipo_investigacion" class="w-full p-2 border border-gray-300 rounded-md">
+                                        <div class="text-xs text-gray-500 mt-1" id="tipo_investigacion_counter">0 / 500</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Datos Estadísticos</label>
                                         <textarea id="edit_datos_estadisticos" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_datos_estadisticos_counter">0 / 4000</div>
                                     </div>
                                 </div>
                             </div>
@@ -508,14 +548,17 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Objetivo Original</label>
                                         <textarea id="edit_objetivo_original" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_objetivo_original_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Objetivo Español</label>
                                         <textarea id="objetivo_espanol" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="objetivo_espanol_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Objetivo Reescrito</label>
                                         <textarea id="objetivo_reescrito" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="objetivo_reescrito_counter">0 / 4000</div>
                                     </div>
                                 </div>
                             </div>
@@ -527,22 +570,27 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Justificación</label>
                                         <textarea id="justificacion" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="justificacion_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Hipótesis</label>
                                         <textarea id="hipotesis" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="hipotesis_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Estudios Previos</label>
                                         <textarea id="edit_estudios_previos" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_estudios_previos_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Población/Muestra/Datos</label>
                                         <textarea id="edit_poblacion_muestra_datos" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_poblacion_muestra_datos_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Recolección de Datos</label>
                                         <textarea id="edit_recoleccion_datos" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_recoleccion_datos_counter">0 / 4000</div>
                                     </div>
                                 </div>
                             </div>
@@ -554,18 +602,22 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Resultados</label>
                                         <textarea id="resultados" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="resultados_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Conclusiones</label>
                                         <textarea id="conclusiones" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="conclusiones_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Discusión</label>
                                         <textarea id="edit_discusion" rows="3" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_discusion_counter">0 / 4000</div>
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Trabajos Futuros</label>
                                         <textarea id="edit_trabajos_futuros" rows="2" class="w-full p-2 border border-gray-300 rounded-md"></textarea>
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_trabajos_futuros_counter">0 / 4000</div>
                                     </div>
                                 </div>
                             </div>
@@ -599,6 +651,7 @@
                                     <div>
                                         <label class="block text-sm font-medium text-blue-700 mb-1">Enlace</label>
                                         <input type="url" id="edit_enlace" class="w-full p-2 border border-gray-300 rounded-md scopus-imported-field">
+                                        <div class="text-xs text-gray-500 mt-1" id="edit_enlace_counter">0 / 500</div>
                                     </div>
                                     <div class="flex items-center">
                                         <input type="checkbox" id="seleccionado" class="mr-2">
