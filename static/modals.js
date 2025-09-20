@@ -116,11 +116,17 @@ Por favor, complete los siguientes campos basándose en la lectura cuidadosa del
             return false;
         }
         
-        // Excluir campos que tienen datos fijos
         if (col.dato_fijo && col.dato_fijo.trim() !== '') {
             return false;
         }
         
+        const excludeWords = ['quartil', 'seleccionado'];
+        if (
+            col.columna &&
+            excludeWords.some(word => col.columna.toLowerCase().includes(word))
+        ) {
+            return false;
+        }
         return true;
     });
 
@@ -132,7 +138,9 @@ campos_analisis:
 
     for (const column of fieldsToComplete) {
         prompt += `  - campo: "${column.columna}"\n`;
-        prompt += `    numero: ${column.nro_columna}\n`;
+        if (column.idioma_deseado_redactar) {
+            prompt += `    idioma: "${column.idioma_deseado_redactar}"\n`;
+        }
         if (column.explicacion) {
             prompt += `    descripcion: "${column.explicacion}"\n`;
         }
@@ -154,19 +162,18 @@ campos_analisis:
 4. **Objetividad**: Base sus respuestas únicamente en el contenido del artículo
 5. **Traducciones**: Para campos de traducción, mantenga el sentido original pero use español claro y académico
 6. **Realismo**: Se penaliza si completa información que el documento no mencione, es preferible indicar que no hay información al respecto en vez de inventarla.
-7. **Redacción**: Use un lenguaje claro, conciso y académico, evitando jergas o coloquialismos.
+7. **Redacción**: Use un lenguaje no tan técnico, debe ser comprensible, manteniendo un tono académico.
 
 ## FORMATO DE RESPUESTA:
-
 Para cada campo listado arriba, proporcione su respuesta en el siguiente formato:
-
-**Nombre del campo:** [nombre_exacto_del_campo]
+"""
+**<Nombre del campo exacto>:**
 
 \`\`\`
-[Su respuesta aquí]
+<Su respuesta aquí>
 \`\`\`
+"""
 
----
 `;
 
     return prompt;
