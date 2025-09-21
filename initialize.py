@@ -50,35 +50,39 @@ class ProjectInitializer:
             print(f"Error {operation_name}: {e}")
             return False
     
-    def initialize(self):
-        print("Inicializando proyecto...")
+    def initialize(self, verbose=False):
+        if verbose:
+            print("Inicializando proyecto...")
         
         try:
-            if not self._ensure_env_file():
+            if not self._ensure_env_file(verbose):
                 return self._print_error_and_exit_instructions("Configuración incompleta.")
             
             load_dotenv()
             
-            if not self._validate_and_setup_database():
+            if not self._validate_and_setup_database(verbose):
                 return self._print_error_and_exit_instructions("Error en la configuración de base de datos.")
             
-            if not self._validate_and_setup_schema():
+            if not self._validate_and_setup_schema(verbose):
                 return self._print_error_and_exit_instructions("Error en la configuración del esquema de base de datos.")
             
-            if not self._validate_and_setup_data():
+            if not self._validate_and_setup_data(verbose):
                 return self._print_error_and_exit_instructions("Error en la configuración de datos iniciales.")
             
-            print("\nProyecto inicializado correctamente y listo para ejecutar el servidor web.")
+            if verbose:
+                print("\nProyecto inicializado correctamente y listo para ejecutar el servidor web.")
             return True
             
         except Exception as e:
             return self._print_error_and_exit_instructions(f"Error durante la inicialización: {e}")
     
-    def _ensure_env_file(self):
-        print("Verificando archivo de configuración (.env)...")
+    def _ensure_env_file(self, verbose=False):
+        if verbose:
+            print("Verificando archivo de configuración (.env)...")
         
         if os.path.exists(self.env_file):
-            print("Archivo .env encontrado.")
+            if verbose:
+                print("Archivo .env encontrado.")
             
             load_dotenv()
             missing_vars = []
@@ -170,13 +174,15 @@ class ProjectInitializer:
             print(f"Error guardando configuración: {e}")
             return False
     
-    def _validate_and_setup_database(self):
-        print("Verificando base de datos...")
+    def _validate_and_setup_database(self, verbose=False):
+        if verbose:
+            print("Verificando base de datos...")
         
         target_db = os.getenv('PG_DATABASE')
         
         if self._database_exists(target_db):
-            print(f"Base de datos '{target_db}' ya existe")
+            if verbose:
+                print(f"Base de datos '{target_db}' ya existe")
             return True
         
         print(f"Creando base de datos '{target_db}'...")
@@ -202,11 +208,13 @@ class ProjectInitializer:
         
         return self._execute_db_operation("creando base de datos", create_db)
     
-    def _validate_and_setup_schema(self):
-        print("Verificando esquema de base de datos...")
+    def _validate_and_setup_schema(self, verbose=False):
+        if verbose:
+            print("Verificando esquema de base de datos...")
         
         if self._schema_exists():
-            print("Esquema de base de datos ya existe")
+            if verbose:
+                print("Esquema de base de datos ya existe")
             return True
         
         print("Creando esquema de base de datos...")
@@ -248,11 +256,13 @@ class ProjectInitializer:
         
         return self._execute_db_operation("creando esquema", create_schema)
     
-    def _validate_and_setup_data(self):
-        print("Verificando datos en metadata_columnas...")
+    def _validate_and_setup_data(self, verbose=False):
+        if verbose:
+            print("Verificando datos en metadata_columnas...")
         
         if self._data_exists():
-            print("Datos en metadata_columnas ya existen")
+            if verbose:
+                print("Datos en metadata_columnas ya existen")
             return True
         
         print("Poblando datos en metadata_columnas...")
@@ -290,13 +300,13 @@ class ProjectInitializer:
         return self._execute_db_operation("poblando datos", populate)
     
 
-def is_ready_to_run():
+def is_ready_to_run(verbose=False):
     initializer = ProjectInitializer()
-    return initializer.initialize()
+    return initializer.initialize(verbose)
 
 
 def run_app():
-    if is_ready_to_run():
+    if is_ready_to_run(verbose=True):
         print("\nIniciando servidor web...")
         from app import create_app
         app = create_app()
