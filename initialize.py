@@ -5,6 +5,7 @@ import psycopg2
 from psycopg2.extensions import ISOLATION_LEVEL_AUTOCOMMIT
 from dotenv import load_dotenv
 import columns2db
+from contextlib import contextmanager
 
 class ProjectInitializer:
     def __init__(self):
@@ -16,39 +17,62 @@ class ProjectInitializer:
             'PG_PASSWORD', 'PG_DATABASE'
         ]
     
+    def _print_error_and_exit_instructions(self, error_msg):
+        print(f"\n{error_msg}")
+        print(f"Ejecuta 'python {__file__}' para intentar resolver el problema.")
+        return False
+    
+    @contextmanager
+    def _get_postgres_connection(self, database='postgres'):
+        conn = None
+        cursor = None
+        try:
+            conn = psycopg2.connect(
+                host=os.getenv('PG_HOST'),
+                port=os.getenv('PG_PORT'),
+                user=os.getenv('PG_USER'),
+                password=os.getenv('PG_PASSWORD'),
+                database=database
+            )
+            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
+            cursor = conn.cursor()
+            yield cursor
+        finally:
+            if cursor:
+                cursor.close()
+            if conn:
+                conn.close()
+    
+    def _execute_db_operation(self, operation_name, operation_func, *args, **kwargs):
+        try:
+            return operation_func(*args, **kwargs)
+        except Exception as e:
+            print(f"Error {operation_name}: {e}")
+            return False
+    
     def initialize(self):
         print("Inicializando proyecto...")
         
         try:
             if not self._ensure_env_file():
-                print("\nConfiguración incompleta.")
-                print(f"Ejecuta 'python {__file__}' para completar la configuración.")
-                return False
+                return self._print_error_and_exit_instructions("Configuración incompleta.")
             
             load_dotenv()
             
             if not self._validate_and_setup_database():
-                print("\nError en la configuración de base de datos.")
-                print(f"Ejecuta 'python {__file__}' para intentar resolver el problema.")
-                return False
+                return self._print_error_and_exit_instructions("Error en la configuración de base de datos.")
             
             if not self._validate_and_setup_schema():
-                print("\nError en la configuración del esquema de base de datos.")
-                print(f"Ejecuta 'python {__file__}' para intentar resolver el problema.")
-                return False
+                return self._print_error_and_exit_instructions("Error en la configuración del esquema de base de datos.")
             
             if not self._validate_and_setup_data():
-                print("\nError en la configuración de datos iniciales.")
-                print(f"Ejecuta 'python {__file__}' para intentar resolver el problema.")
-                return False
+                return self._print_error_and_exit_instructions("Error en la configuración de datos iniciales.")
             
             print("\nProyecto inicializado correctamente y listo para ejecutar el servidor web.")
             return True
             
         except Exception as e:
-            print(f"\nError durante la inicialización: {e}")
-            print(f"Ejecuta 'python {__file__}' para intentar resolver el problema.")
-            return False
+            return self._print_error_and_exit_instructions(f"Error durante la inicialización: {e}")
     
     def _ensure_env_file(self):
         print("Verificando archivo de configuración (.env)...")
@@ -159,55 +183,24 @@ class ProjectInitializer:
         return self._create_database(target_db)
     
     def _database_exists(self, database_name):
-        try:
-            conn = psycopg2.connect(
-                host=os.getenv('PG_HOST'),
-                port=os.getenv('PG_PORT'),
-                user=os.getenv('PG_USER'),
-                password=os.getenv('PG_PASSWORD'),
-                database='postgres'
-            )
-            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            
-            cursor = conn.cursor()
-            cursor.execute(
-                "SELECT 1 FROM pg_catalog.pg_database WHERE datname = %s",
-                (database_name,)
-            )
-            exists = cursor.fetchone() is not None
-            
-            cursor.close()
-            conn.close()
-            
-            return exists
-            
-        except Exception as e:
-            print(f"Error verificando existencia de BD: {e}")
-            return False
+        def check_existence():
+            with self._get_postgres_connection() as cursor:
+                cursor.execute(
+                    "SELECT 1 FROM pg_catalog.pg_database WHERE datname = %s",
+                    (database_name,)
+                )
+                return cursor.fetchone() is not None
+        
+        return self._execute_db_operation("verificando existencia de BD", check_existence)
     
     def _create_database(self, database_name):
-        try:
-            conn = psycopg2.connect(
-                host=os.getenv('PG_HOST'),
-                port=os.getenv('PG_PORT'),
-                user=os.getenv('PG_USER'),
-                password=os.getenv('PG_PASSWORD'),
-                database='postgres'
-            )
-            conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-            
-            cursor = conn.cursor()
-            cursor.execute(f'CREATE DATABASE "{database_name}"')
-            
-            cursor.close()
-            conn.close()
-            
+        def create_db():
+            with self._get_postgres_connection() as cursor:
+                cursor.execute(f'CREATE DATABASE "{database_name}"')
             print(f"Base de datos '{database_name}' creada exitosamente")
             return True
-            
-        except Exception as e:
-            print(f"Error creando base de datos: {e}")
-            return False
+        
+        return self._execute_db_operation("creando base de datos", create_db)
     
     def _validate_and_setup_schema(self):
         print("Verificando esquema de base de datos...")
@@ -220,35 +213,26 @@ class ProjectInitializer:
         return self._create_schema()
     
     def _schema_exists(self):
-        try:
-            conn = self._get_target_db_connection()
-            cursor = conn.cursor()
-            
-            tables_to_check = ['articulos', 'articulo_documentos', 'metadata_columnas']
-            
-            for table in tables_to_check:
-                cursor.execute("""
-                    SELECT EXISTS (
-                        SELECT FROM information_schema.tables 
-                        WHERE table_name = %s
-                    )
-                """, (table,))
+        def check_schema():
+            with self._get_postgres_connection(os.getenv('PG_DATABASE')) as cursor:
+                tables_to_check = ['articulos', 'articulo_documentos', 'metadata_columnas']
                 
-                if not cursor.fetchone()[0]:
-                    cursor.close()
-                    conn.close()
-                    return False
-            
-            cursor.close()
-            conn.close()
-            return True
-            
-        except Exception as e:
-            print(f"Error verificando esquema: {e}")
-            return False
+                for table in tables_to_check:
+                    cursor.execute("""
+                        SELECT EXISTS (
+                            SELECT FROM information_schema.tables 
+                            WHERE table_name = %s
+                        )
+                    """, (table,))
+                    
+                    if not cursor.fetchone()[0]:
+                        return False
+                return True
+        
+        return self._execute_db_operation("verificando esquema", check_schema)
     
     def _create_schema(self):
-        try:
+        def create_schema():
             if not os.path.exists(self.schema_file):
                 print(f"No se encontró el archivo {self.schema_file}")
                 return False
@@ -256,19 +240,13 @@ class ProjectInitializer:
             with open(self.schema_file, 'r', encoding='utf-8') as file:
                 schema_sql = file.read()
             
-            conn = self._get_target_db_connection()
-            cursor = conn.cursor()
-            cursor.execute(schema_sql)
-            
-            cursor.close()
-            conn.close()
+            with self._get_postgres_connection(os.getenv('PG_DATABASE')) as cursor:
+                cursor.execute(schema_sql)
             
             print("Esquema creado exitosamente")
             return True
-            
-        except Exception as e:
-            print(f"Error creando esquema: {e}")
-            return False
+        
+        return self._execute_db_operation("creando esquema", create_schema)
     
     def _validate_and_setup_data(self):
         print("Verificando datos en metadata_columnas...")
@@ -281,24 +259,16 @@ class ProjectInitializer:
         return self._populate_data()
     
     def _data_exists(self):
-        try:
-            conn = self._get_target_db_connection()
-            cursor = conn.cursor()
-            
-            cursor.execute("SELECT COUNT(*) FROM metadata_columnas")
-            count = cursor.fetchone()[0]
-            
-            cursor.close()
-            conn.close()
-            
-            return count > 0
-            
-        except Exception as e:
-            print(f"Error verificando datos: {e}")
-            return False
+        def check_data():
+            with self._get_postgres_connection(os.getenv('PG_DATABASE')) as cursor:
+                cursor.execute("SELECT COUNT(*) FROM metadata_columnas")
+                count = cursor.fetchone()[0]
+                return count > 0
+        
+        return self._execute_db_operation("verificando datos", check_data)
     
     def _populate_data(self):
-        try:
+        def populate():
             if not os.path.exists('columnas-analisis.md'):
                 print("No se encontró el archivo columnas-analisis.md")
                 return False
@@ -310,36 +280,15 @@ class ProjectInitializer:
                 print("No se pudo procesar el archivo markdown")
                 return False
             
-            conn = self._get_target_db_connection()
-            if conn is None:
-                print("No se pudo conectar a la base de datos")
-                return False
-            
-            cursor = conn.cursor()
-            columns2db.reset_table(cursor)
-            columns2db.insert_column_data(cursor, rows)
-            
-            cursor.close()
-            conn.close()
+            with self._get_postgres_connection(os.getenv('PG_DATABASE')) as cursor:
+                columns2db.reset_table(cursor)
+                columns2db.insert_column_data(cursor, rows)
             
             print("Datos poblados exitosamente")
             return True
-                
-        except Exception as e:
-            print(f"Error poblando datos: {e}")
-            return False
+        
+        return self._execute_db_operation("poblando datos", populate)
     
-    def _get_target_db_connection(self):
-        conn = psycopg2.connect(
-            host=os.getenv('PG_HOST'),
-            port=os.getenv('PG_PORT'),
-            user=os.getenv('PG_USER'),
-            password=os.getenv('PG_PASSWORD'),
-            database=os.getenv('PG_DATABASE')
-        )
-        conn.set_isolation_level(ISOLATION_LEVEL_AUTOCOMMIT)
-        return conn
-
 
 def is_ready_to_run():
     initializer = ProjectInitializer()
