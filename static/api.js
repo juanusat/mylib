@@ -109,7 +109,7 @@ export async function importCSV(forceImport = false) {
         if (data.status === 'success') {
             showMessage(data.message, 'success');
             await loadArticles();
-            setFilteredArticles([...allArticles]);
+            setFilteredArticles([...allArticles].sort((a, b) => a.id - b.id));
             renderTable();
         } else {
             showMessage(data.message, 'error');

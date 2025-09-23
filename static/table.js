@@ -195,7 +195,7 @@ export function filterArticles() {
             (selectionFilter === 'SEL:F' && !article.seleccionado);
         
         return matchesSearch && matchesSelection;
-    });
+    }).sort((a, b) => a.id - b.id);
     
     setFilteredArticles(filtered);
     setCurrentPage(1);

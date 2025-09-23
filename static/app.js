@@ -9,7 +9,7 @@ import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.j
 document.addEventListener('DOMContentLoaded', function() {
     loadFieldMetadata();
     loadArticles().then(() => {
-        setFilteredArticles([...allArticles]);
+        setFilteredArticles([...allArticles].sort((a, b) => a.id - b.id));
         renderTable();
     });
     updateColumns();
