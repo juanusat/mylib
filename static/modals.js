@@ -123,6 +123,15 @@ export async function openInstructionsModal() {
         const instructionsText = generateInstructionsPrompt();
         document.getElementById('instructionsText').value = instructionsText;
         
+        const instructionsTextJSON = generateInstructionsPromptJSON();
+        document.getElementById('instructionsTextJSON').value = instructionsTextJSON;
+        
+        // Clear JSON input area
+        const jsonInputArea = document.getElementById('jsonInputArea');
+        if (jsonInputArea) {
+            jsonInputArea.value = '';
+        }
+        
         document.getElementById('instructionsModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
     } catch (error) {
@@ -222,6 +231,134 @@ Para cada campo listado arriba, proporcione su respuesta en el siguiente formato
     return prompt;
 }
 
+export function generateInstructionsPromptJSON() {
+    const currentDate = new Date().toLocaleDateString('es-ES');
+    
+    let prompt = `# INSTRUCCIONES PARA ANÁLISIS DE ARTÍCULO CIENTÍFICO - FORMATO JSON
+
+Por favor, complete los siguientes campos basándose en la lectura cuidadosa del artículo científico. 
+
+**IMPORTANTE: Debe entregar su respuesta como un ARRAY JSON dentro de un bloque de código markdown.**
+
+---
+
+`;
+
+    // Check if columnMetadata is available
+    if (!columnMetadata || !Array.isArray(columnMetadata) || columnMetadata.length === 0) {
+        prompt += `\nNo se pudieron cargar los metadatos de las columnas. Por favor, recargue la página e intente nuevamente.\n`;
+        return prompt;
+    }
+
+    const fieldsToComplete = columnMetadata.filter(col => {
+        // Excluir campos que tienen valor en id_from_backup (importados del CSV)
+        if (col.id_from_backup && col.id_from_backup.trim() !== '') {
+            return false;
+        }
+        
+        if (col.dato_fijo && col.dato_fijo.trim() !== '') {
+            return false;
+        }
+        
+        const excludeWords = ['quartil', 'seleccionado'];
+        if (
+            col.columna &&
+            excludeWords.some(word => col.columna.toLowerCase().includes(word))
+        ) {
+            return false;
+        }
+        return true;
+    });
+
+    // Generate YAML format for reference
+    prompt += `## CAMPOS A COMPLETAR (EN ORDEN):\n\n\`\`\`yaml
+`;
+
+    fieldsToComplete.forEach((column, index) => {
+        prompt += `${index + 1}. campo: "${column.columna}"\n`;
+        if (column.idioma_deseado_redactar) {
+            prompt += `   idioma: "${column.idioma_deseado_redactar}"\n`;
+        }
+        if (column.explicacion) {
+            prompt += `   descripcion: "${column.explicacion}"\n`;
+        }
+        if (column.formato) {
+            prompt += `   formato: "${column.formato}"\n`;
+        }
+        if (column.max && column.max > 0) {
+            prompt += `   maximo_caracteres: ${column.max}\n`;
+        }
+        prompt += `\n`;
+    });
+
+    prompt += `\`\`\`
+
+---
+
+## INSTRUCCIONES GENERALES:
+
+1. **Lectura completa**: Lea todo el artículo antes de comenzar el análisis
+2. **Precisión**: Sea específico y preciso en sus respuestas
+3. **Límites de caracteres**: Respete el número máximo de caracteres indicado para cada campo cuando esté especificado
+4. **Información faltante**: Si alguna información no está disponible, indique "No especificado" o "No disponible"
+5. **Objetividad**: Base sus respuestas únicamente en el contenido del artículo
+6. **Traducciones**: Para campos de traducción, mantenga el sentido original pero use español claro y académico
+7. **Realismo**: Se penaliza si completa información que el documento no mencione, es preferible indicar que no hay información al respecto en vez de inventarla.
+8. **Redacción**: Use un lenguaje no tan técnico, debe ser comprensible, manteniendo un tono académico. Las respuestas son texto plano sin formato.
+9. **Citas**: Puedes mencionar al autor y año si el caso lo amerita, pero no coloques el número de página como parte de ninguna referencia.
+
+---
+
+## FORMATO DE RESPUESTA REQUERIDO:
+
+**DEBE entregar su respuesta como un ARRAY JSON con objetos en el MISMO ORDEN que se presentan arriba:**
+
+\`\`\`json
+[
+`;
+
+    // Generate example JSON structure
+    fieldsToComplete.forEach((column, index) => {
+        const comma = index < fieldsToComplete.length - 1 ? ',' : '';
+        prompt += `  {\n`;
+        prompt += `    "atributo": "${column.columna}",\n`;
+        prompt += `    "contenido": "Su respuesta aquí"\n`;
+        prompt += `  }${comma}\n`;
+    });
+
+    prompt += `]
+\`\`\`
+
+**IMPORTANTE:** 
+- Debe ser un ARRAY (corchetes []) de objetos
+- Cada objeto debe tener las propiedades "atributo" y "contenido"
+- Debe respetar el MISMO ORDEN en que se presentan los campos arriba
+- La propiedad "atributo" es REFERENCIAL (puede usar nombres simplificados si lo desea)
+- El sistema asignará los valores por POSICIÓN en el array, no por el nombre del atributo
+- Use comillas dobles para las propiedades y valores
+- Asegúrese de que el JSON sea válido
+- No incluya comentarios dentro del JSON
+- Si un valor contiene comillas, escápelas con \\
+
+**EJEMPLO DE FORMATO CORRECTO:**
+\`\`\`json
+[
+  {
+    "atributo": "Título",
+    "contenido": "Análisis de deep learning en imágenes médicas"
+  },
+  {
+    "atributo": "Resumen",
+    "contenido": "Este artículo presenta un estudio sobre..."
+  }
+]
+\`\`\`
+
+`;
+
+    return prompt;
+}
+
 export async function regenerateInstructions() {
     try {
         await loadColumnMetadata();
@@ -231,6 +368,18 @@ export async function regenerateInstructions() {
     } catch (error) {
         console.error('Error regenerating instructions:', error);
         showInstructionsMessage('Error al regenerar las instrucciones', 'error');
+    }
+}
+
+export async function regenerateInstructionsJSON() {
+    try {
+        await loadColumnMetadata();
+        const instructionsText = generateInstructionsPromptJSON();
+        document.getElementById('instructionsTextJSON').value = instructionsText;
+        showInstructionsMessage('Instrucciones JSON regeneradas', 'success');
+    } catch (error) {
+        console.error('Error regenerating JSON instructions:', error);
+        showInstructionsMessage('Error al regenerar las instrucciones JSON', 'error');
     }
 }
 
@@ -294,6 +443,257 @@ export async function copyInstructions(event) {
         textArea.select();
         textArea.setSelectionRange(0, textArea.value.length);
         showInstructionsMessage('Texto seleccionado. Use Ctrl+C para copiar manualmente', 'info');
+    }
+}
+
+export async function copyInstructionsJSON(event) {
+    const textArea = document.getElementById('instructionsTextJSON');
+    const button = event?.target || document.querySelector('button[onclick="copyInstructionsJSON(event)"]');
+    
+    // Check if clipboard API is available
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        try {
+            await navigator.clipboard.writeText(textArea.value);
+            
+            // Visual feedback
+            if (button) {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                button.classList.add('bg-green-800');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('bg-green-800');
+                    button.classList.add('bg-green-600', 'hover:bg-green-700');
+                }, 2000);
+            }
+            return;
+        } catch (err) {
+            console.error('Error copying to clipboard:', err);
+        }
+    }
+    
+    // Fallback: try the older document.execCommand method
+    try {
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, textArea.value.length);
+        
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showInstructionsMessage('Texto copiado al portapapeles', 'success');
+            if (button) {
+                const originalText = button.innerHTML;
+                button.innerHTML = '<i class="fas fa-check"></i> Copiado';
+                button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                button.classList.add('bg-green-800');
+                
+                setTimeout(() => {
+                    button.innerHTML = originalText;
+                    button.classList.remove('bg-green-800');
+                    button.classList.add('bg-green-600', 'hover:bg-green-700');
+                }, 2000);
+            }
+        } else {
+            throw new Error('execCommand failed');
+        }
+    } catch (fallbackErr) {
+        console.error('Fallback copy failed:', fallbackErr);
+        
+        // Final fallback: just select the text
+        textArea.focus();
+        textArea.select();
+        textArea.setSelectionRange(0, textArea.value.length);
+        showInstructionsMessage('Texto seleccionado. Use Ctrl+C para copiar manualmente', 'info');
+    }
+}
+
+export function validateAndApplyJSON() {
+    const jsonTextarea = document.getElementById('jsonInputArea');
+    const jsonText = jsonTextarea.value.trim();
+    
+    if (!jsonText) {
+        showInstructionsMessage('Por favor, pegue un JSON en el área de texto', 'error');
+        return;
+    }
+    
+    try {
+        // Try to extract JSON from markdown code block
+        let jsonContent = jsonText;
+        const codeBlockMatch = jsonText.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+        
+        if (codeBlockMatch) {
+            jsonContent = codeBlockMatch[1].trim();
+        }
+        
+        // Parse JSON
+        const data = JSON.parse(jsonContent);
+        
+        // Validate that it's an array
+        if (!Array.isArray(data)) {
+            throw new Error('El JSON debe ser un array de objetos, no un objeto u otro tipo');
+        }
+        
+        // Validate array structure
+        if (data.length === 0) {
+            throw new Error('El array está vacío');
+        }
+        
+        // Validate each element has the required structure
+        for (let i = 0; i < data.length; i++) {
+            const item = data[i];
+            if (typeof item !== 'object' || item === null) {
+                throw new Error(`Elemento ${i + 1}: debe ser un objeto`);
+            }
+            if (!item.hasOwnProperty('atributo')) {
+                throw new Error(`Elemento ${i + 1}: falta la propiedad "atributo"`);
+            }
+            if (!item.hasOwnProperty('contenido')) {
+                throw new Error(`Elemento ${i + 1}: falta la propiedad "contenido"`);
+            }
+        }
+        
+        // Show validation success
+        showInstructionsMessage(`✓ JSON válido con ${data.length} elementos. Aplicando datos a los campos...`, 'success');
+        
+        // Apply data to fields
+        setTimeout(() => {
+            applyJSONToFields(data);
+        }, 500);
+        
+    } catch (error) {
+        console.error('Error validating JSON:', error);
+        showInstructionsMessage('Error: JSON inválido - ' + error.message, 'error');
+    }
+}
+
+// Array ordenado que mapea posición del JSON → ID del campo HTML
+// Este orden corresponde EXACTAMENTE al orden en que se generan los campos en generateInstructionsPromptJSON()
+// Basado en el debug log de fieldsToComplete
+function getFieldIdsByOrder() {
+    return [
+        'titulo_espanol',             // 0: Título (español)
+        'resumen',                    // 1: Resumen
+        'problema_articulo',          // 2: Problema a solucionar en el artículo
+        'edit_datos_estadisticos',    // 3: Datos estadísticos
+        'pregunta_investigacion',     // 4: Pregunta de investigación
+        'edit_objetivo_original',     // 5: Objetivo(s) (original) - TIENE id_from_backup pero aparece en la lista
+        'objetivo_espanol',           // 6: Objetivo(s) (español)
+        'objetivo_reescrito',         // 7: Objetivo reescrito
+        'justificacion',              // 8: Justificación
+        'hipotesis',                  // 9: Hipótesis
+        'tipo_investigacion',         // 10: Tipo de investigacion
+        'edit_estudios_previos',      // 11: Estudios previos
+        'edit_poblacion_muestra_datos', // 12: Población/muestra/datos
+        'edit_recoleccion_datos',     // 13: Recolección de datos
+        'resultados',                 // 14: Resultados
+        'conclusiones',               // 15: Conclusiones
+        'edit_discusion',             // 16: Discución
+        'edit_trabajos_futuros'       // 17: Trabajos futuros
+    ];
+}
+
+export function applyJSONToFields(dataArray) {
+    let appliedCount = 0;
+    let skippedCount = 0;
+    const skippedFields = [];
+    
+    // Get ordered array of field IDs
+    const orderedFieldIds = getFieldIdsByOrder();
+    
+    // Get the fields from metadata in the same order they were presented
+    const fieldsToComplete = columnMetadata.filter(col => {
+        if (col.id_from_backup && col.id_from_backup.trim() !== '') {
+            return false;
+        }
+        if (col.dato_fijo && col.dato_fijo.trim() !== '') {
+            return false;
+        }
+        const excludeWords = ['quartil', 'seleccionado'];
+        if (col.columna && excludeWords.some(word => col.columna.toLowerCase().includes(word))) {
+            return false;
+        }
+        return true;
+    });
+    
+    // Debug: log the expected fields
+    console.log('=== DEBUG: Campos esperados ===');
+    fieldsToComplete.forEach((field, idx) => {
+        console.log(`${idx}: ${field.columna} (idioma: ${field.idioma_deseado_redactar || 'N/A'})`);
+    });
+    console.log('=== FIN DEBUG ===');
+    
+    // Apply values by position in the array
+    const maxItems = Math.min(dataArray.length, orderedFieldIds.length);
+    
+    for (let i = 0; i < maxItems; i++) {
+        const item = dataArray[i];
+        const fieldId = orderedFieldIds[i];
+        const metadataName = fieldsToComplete[i] ? fieldsToComplete[i].columna : `Posición ${i}`;
+        
+        if (!fieldId) {
+            console.warn(`Posición ${i}: Campo nulo/undefined en orderedFieldIds (saltando)`);
+            skippedFields.push(`Pos ${i}: ${item.atributo} (no mapeado)`);
+            skippedCount++;
+            continue;
+        }
+        
+        try {
+            // Find the input field by ID
+            const input = document.getElementById(fieldId);
+            
+            if (!input) {
+                console.warn(`Posición ${i}: Campo no encontrado en el formulario: ${fieldId} (metadata: "${metadataName}")`);
+                skippedFields.push(`Pos ${i}: ${metadataName} (${fieldId} no encontrado)`);
+                skippedCount++;
+                continue;
+            }
+            
+            // Check if field is readonly (imported from Scopus)
+            if (input.hasAttribute('readonly') || input.classList.contains('scopus-imported-field')) {
+                console.log(`Posición ${i}: Campo de solo lectura omitido: ${fieldId} (metadata: "${metadataName}")`);
+                skippedFields.push(`Pos ${i}: ${metadataName} (solo lectura)`);
+                skippedCount++;
+                continue;
+            }
+            
+            // Set the value using the contenido property
+            setFieldValue(fieldId, item.contenido);
+            appliedCount++;
+            
+            console.log(`✓ Posición ${i} aplicada: ${fieldId} = "${item.atributo}" (${item.contenido.length} caracteres)`);
+            
+        } catch (error) {
+            console.error(`Error aplicando posición ${i} (${fieldId}):`, error);
+            skippedFields.push(`Pos ${i}: ${fieldId}`);
+            skippedCount++;
+        }
+    }
+    
+    // Show summary message
+    let message = `✓ Datos aplicados: ${appliedCount} campos actualizados`;
+    
+    if (dataArray.length > orderedFieldIds.length) {
+        message += `. Advertencia: El JSON tiene ${dataArray.length - orderedFieldIds.length} elementos extra que fueron ignorados`;
+    } else if (dataArray.length < orderedFieldIds.length) {
+        message += `. Nota: Faltan ${orderedFieldIds.length - dataArray.length} campos por completar`;
+    }
+    
+    if (skippedCount > 0) {
+        message += `. ${skippedCount} campos omitidos`;
+        if (skippedFields.length > 0) {
+            console.warn('Campos omitidos:', skippedFields);
+        }
+    }
+    
+    showInstructionsMessage(message, appliedCount > 0 ? 'success' : 'error');
+    
+    // Close modal after successful application (wait 5 seconds)
+    if (appliedCount > 0) {
+        setTimeout(() => {
+            closeInstructionsModal();
+        }, 5000);
     }
 }
 
