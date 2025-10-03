@@ -8,9 +8,16 @@ import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.j
 // Load articles on page load
 document.addEventListener('DOMContentLoaded', function() {
     loadFieldMetadata();
+    // Establecer el filtro SEL:V por defecto
+    const selectionFilter = document.getElementById('selectionFilter');
+    if (selectionFilter) {
+        selectionFilter.value = 'SEL:V';
+    }
     loadArticles().then(() => {
         setFilteredArticles([...allArticles].sort((a, b) => a.id - b.id));
         renderTable();
+        // Aplicar el filtro después de cargar
+        filterArticles();
     });
     updateColumns();
 });
