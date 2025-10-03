@@ -138,6 +138,11 @@ export function addPasteEventListeners() {
             
             // Add the paste event listener
             field.addEventListener('paste', handlePasteEvent);
+
+            // Remove any existing dblclick listener to avoid duplicates
+            field.removeEventListener('dblclick', handleAltDoubleClick);
+            // Add dblclick listener to allow manual cleaning with Alt key
+            field.addEventListener('dblclick', handleAltDoubleClick);
         }
     });
 }
@@ -168,6 +173,35 @@ function handlePasteEvent(event) {
     } catch (error) {
         console.error('Error handling paste event:', error);
         event.target.value = event.target.value;
+    }
+}
+
+// Handler invoked when user double-clicks a field while holding Alt
+function handleAltDoubleClick(event) {
+    try {
+        // Only act if Alt key is pressed during the double click
+        if (!event.altKey) return;
+
+        const field = event.target;
+        if (!field) return;
+
+        const original = field.value || '';
+        const cleaned = cleanPastedText(original);
+
+        // If nothing changed, do nothing
+        if (cleaned === original) return;
+
+        field.value = cleaned;
+
+        // Update character counter if present
+        const id = field.id;
+        if (id) updateCharacterCounter(id);
+
+        // Dispatch input event to notify other listeners
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+
+    } catch (error) {
+        console.error('Error in Alt+doubleclick cleaner:', error);
     }
 }
 

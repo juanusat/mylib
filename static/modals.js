@@ -1,6 +1,6 @@
 import { readonlyFields, columnMetadata, setColumnMetadata } from './config.js';
 import { renderDocumentSections } from './documents.js';
-import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
+import { setFieldValue, configureReadonlyFields, getFieldValue, cleanPastedText } from './utils.js';
 
 // Función para resetear el estado del botón de importación
 function resetImportButtonState() {
@@ -126,10 +126,20 @@ export async function openInstructionsModal() {
         const instructionsTextJSON = generateInstructionsPromptJSON();
         document.getElementById('instructionsTextJSON').value = instructionsTextJSON;
         
-        // Clear JSON input area
+        // Clear JSON input area and set up paste listener
         const jsonInputArea = document.getElementById('jsonInputArea');
         if (jsonInputArea) {
             jsonInputArea.value = '';
+            
+            // Remove existing paste listener to avoid duplicates
+            jsonInputArea.removeEventListener('paste', handleJSONAreaPaste);
+            // Add paste listener for auto-cleanup
+            jsonInputArea.addEventListener('paste', handleJSONAreaPaste);
+            
+            // Remove existing dblclick listener to avoid duplicates
+            jsonInputArea.removeEventListener('dblclick', handleJSONAreaDoubleClick);
+            // Add dblclick listener to allow manual cleaning with Alt key
+            jsonInputArea.addEventListener('dblclick', handleJSONAreaDoubleClick);
         }
         
         document.getElementById('instructionsModal').classList.remove('hidden');
@@ -552,6 +562,11 @@ export function validateAndApplyJSON() {
             if (!item.hasOwnProperty('contenido')) {
                 throw new Error(`Elemento ${i + 1}: falta la propiedad "contenido"`);
             }
+            
+            // If contenido is an array, concatenate with line breaks
+            if (Array.isArray(item.contenido)) {
+                item.contenido = item.contenido.join('\n');
+            }
         }
         
         // Show validation success
@@ -694,6 +709,48 @@ export function applyJSONToFields(dataArray) {
         setTimeout(() => {
             closeInstructionsModal();
         }, 5000);
+    }
+}
+
+// Handler for paste event in JSON input area
+function handleJSONAreaPaste(event) {
+    setTimeout(() => {
+        const textarea = event.target;
+        let text = textarea.value;
+        
+        // Clean markdown code blocks
+        const codeBlockMatch = text.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+        if (codeBlockMatch) {
+            text = codeBlockMatch[1].trim();
+            textarea.value = text;
+        }
+    }, 300);
+}
+
+// Handler for manual cleaning on Alt + double click inside the JSON textarea
+function handleJSONAreaDoubleClick(event) {
+    try {
+        if (!event.altKey) return;
+
+        const textarea = event.target;
+        if (!textarea) return;
+
+        const original = textarea.value || '';
+
+        const codeBlockMatch = original.match(/```(?:json)?\s*\n?([\s\S]*?)\n?```/);
+        let content = original;
+        if (codeBlockMatch) {
+            content = codeBlockMatch[1].trim();
+        }
+
+        const cleaned = cleanPastedText(content);
+        if (cleaned === original) return;
+        textarea.value = cleaned;
+        textarea.dispatchEvent(new Event('input', { bubbles: true }));
+        showInstructionsMessage('Texto limpiado', 'success');
+
+    } catch (error) {
+        console.error('Error en Alt+doubleclick JSON cleaner:', error);
     }
 }
 

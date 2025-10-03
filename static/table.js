@@ -41,6 +41,7 @@ export function renderTableHeader() {
         { key: 'trabajos_futuros', label: 'Trabajos Futuros', visible: visibleColumns.trabajos_futuros },
         { key: 'enlace', label: 'Enlace', visible: visibleColumns.enlace },
         { key: 'eid', label: 'EID', visible: visibleColumns.eid },
+        { key: 'completitud', label: 'Completitud', visible: visibleColumns.completitud },
         { key: 'seleccionado', label: 'Sel.', visible: visibleColumns.seleccionado },
         { key: 'acciones', label: 'Acciones', visible: true }
     ];
@@ -96,6 +97,26 @@ export function renderTableBody() {
             cells.push(`<td class="border border-gray-300 px-4 py-2 text-center">${linkCell}</td>`);
         }
         if (visibleColumns.eid) cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-xs overflow-hidden text-ellipsis" title="${article.eid || ''}">${article.eid || ''}</td>`);
+        if (visibleColumns.completitud) {
+            const fieldKeys = [
+                'titulo_original', 'titulo_espanol', 'autor', 'anio', 'nombre_revista', 
+                'quartil_revista', 'doi', 'base_datos', 'abstract', 'resumen', 
+                'keywords_autor', 'keywords_indexed', 'problema_articulo', 'datos_estadisticos',
+                'pregunta_investigacion', 'objetivo_original', 'objetivo_espanol', 'objetivo_reescrito',
+                'justificacion', 'hipotesis', 'tipo_investigacion', 'estudios_previos',
+                'poblacion_muestra_datos', 'recoleccion_datos', 'resultados', 'conclusiones',
+                'discusion', 'trabajos_futuros', 'enlace', 'eid'
+            ];
+            const totalFields = fieldKeys.length;
+            const filledFields = fieldKeys.filter(key => article[key] && article[key].toString().trim() !== '').length;
+            const completitudText = `${filledFields}/${totalFields}`;
+            const percentage = Math.round((filledFields / totalFields) * 100);
+            let colorClass = 'text-red-600';
+            if (percentage >= 75) colorClass = 'text-green-600';
+            else if (percentage >= 50) colorClass = 'text-yellow-600';
+            else if (percentage >= 25) colorClass = 'text-orange-600';
+            cells.push(`<td class="border border-gray-300 px-4 py-2 text-center font-semibold ${colorClass}" title="${percentage}% completo">${completitudText}</td>`);
+        }
         if (visibleColumns.seleccionado) {
             const isSelected = article.seleccionado;
             const buttonClass = isSelected 
@@ -235,6 +256,7 @@ export function updateColumns() {
         trabajos_futuros: document.getElementById('col-trabajos_futuros').checked,
         enlace: document.getElementById('col-enlace').checked,
         eid: document.getElementById('col-eid').checked,
+        completitud: document.getElementById('col-completitud').checked,
         seleccionado: document.getElementById('col-seleccionado').checked
     };
     setVisibleColumns(newVisibleColumns);

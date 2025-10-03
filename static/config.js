@@ -36,6 +36,7 @@ export let visibleColumns = {
     trabajos_futuros: false,
     enlace: true,
     eid: false,
+    completitud: true,
     seleccionado: true
 };
 
