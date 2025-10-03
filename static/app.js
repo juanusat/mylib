@@ -3,7 +3,7 @@ import { loadFieldMetadata, loadArticles, checkCSV, importCSV, editArticle, save
 import { renderTable, goToPage, changeItemsPerPage, filterArticles, updateColumns, toggleColumnSettings, toggleExportDropdown, downloadExcelFile, exportExcel } from './table.js';
 import { viewDocument, openDocumentSidebar, createDocumentSidebar, closeDocumentSidebar, openInNewTab, toggleFullscreen, getDocumentByType, renderDocumentSections, renderDocumentSection, showUploadForm, cancelUpload } from './documents.js';
 import { showDuplicateConfirmation, closeConfirmModal, proceedWithImport, forceImport, closeModal, showMessage, showModalMessage, clearModalMessage, showInstructionsMessage, openInstructionsModal, generateInstructionsPrompt, generateInstructionsPromptJSON, regenerateInstructions, regenerateInstructionsJSON, copyInstructions, copyInstructionsJSON, validateAndApplyJSON, closeInstructionsModal, loadColumnMetadata, removeSyntaxFromFields } from './modals.js';
-import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
+import { toggleContainerWidth } from './utils.js';
 
 // Load articles on page load
 document.addEventListener('DOMContentLoaded', function() {
@@ -31,6 +31,7 @@ document.addEventListener('click', function(event) {
         dropdown.classList.add('hidden');
     }
 });
+document.querySelector('#toggleWidthText').addEventListener('click', toggleContainerWidth);
 
 // Make functions globally available for onclick handlers
 window.checkCSV = checkCSV;

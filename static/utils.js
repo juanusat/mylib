@@ -248,3 +248,17 @@ export function configureReadonlyFields() {
         }
     });
 }
+
+export function toggleContainerWidth() {
+    const container = document.getElementById('mainContainer');
+    const btnText = document.getElementById('toggleWidthText');
+    if (container.classList.contains('container')) {
+        container.classList.remove('container', 'mx-auto');
+        container.classList.add('w-full');
+        btnText.textContent = 'Ancho normal';
+    } else {
+        container.classList.remove('w-full');
+        container.classList.add('container', 'mx-auto');
+        btnText.textContent = 'Ancho completo';
+    }
+}
