@@ -11,7 +11,6 @@ function resetImportButtonState() {
     if (button && textSpan && loadingSpan) {
         button.disabled = false;
         textSpan.classList.remove('hidden');
-        loadingSpan.classList.add('hidden');
     }
 }
 
@@ -102,7 +101,6 @@ export function clearModalMessage() {
         messageDiv.classList.add('hidden');
     }
 }
-
 export function showInstructionsMessage(message, type) {
     const messageDiv = document.getElementById('instructionsMessage');
     messageDiv.className = `p-3 rounded ${type === 'success' ? 'bg-green-100 text-green-700 border border-green-200' : 
@@ -169,21 +167,10 @@ Por favor, complete los siguientes campos basándose en la lectura cuidadosa del
 
     const fieldsToComplete = columnMetadata.filter(col => {
         // Excluir campos que tienen valor en id_from_backup (importados del CSV)
-        if (col.id_from_backup && col.id_from_backup.trim() !== '') {
-            return false;
-        }
-        
-        if (col.dato_fijo && col.dato_fijo.trim() !== '') {
-            return false;
-        }
-        
+        if (col.id_from_backup && col.id_from_backup.trim() !== '') return false;
+        if (col.dato_fijo && col.dato_fijo.trim() !== '') return false;
         const excludeWords = ['quartil', 'seleccionado'];
-        if (
-            col.columna &&
-            excludeWords.some(word => col.columna.toLowerCase().includes(word))
-        ) {
-            return false;
-        }
+        if (col.columna && excludeWords.some(word => col.columna.toLowerCase().includes(word))) return false;
         return true;
     });
 
@@ -195,48 +182,27 @@ campos_analisis:
 
     for (const column of fieldsToComplete) {
         prompt += `  - campo: "${column.columna}"\n`;
-        if (column.idioma_deseado_redactar) {
-            prompt += `    idioma: "${column.idioma_deseado_redactar}"\n`;
-        }
-        if (column.explicacion) {
-            prompt += `    descripcion: "${column.explicacion}"\n`;
-        }
-        if (column.formato) {
-            prompt += `    formato: "${column.formato}"\n`;
-        }
-        if (column.max && column.max > 0) {
-            prompt += `    maximo_caracteres: ${column.max}\n`;
-        }
+        if (column.idioma_deseado_redactar) prompt += `    idioma: "${column.idioma_deseado_redactar}"\n`;
+        if (column.explicacion) prompt += `    descripcion: "${column.explicacion}"\n`;
+        if (column.formato) prompt += `    formato: "${column.formato}"\n`;
+        if (column.max && column.max > 0) prompt += `    maximo_caracteres: ${column.max}\n`;
         prompt += `\n`;
     }
 
-    prompt += `\`\`\`
+    prompt += '```\n\n---\n\n';
 
----
+    prompt += `## INSTRUCCIONES GENERALES:\n\n`;
+    prompt += `1. **Lectura completa**: Lea todo el artículo antes de comenzar el análisis\n`;
+    prompt += `2. **Precisión**: Sea específico y preciso en sus respuestas\n`;
+    prompt += `3. **Límites de caracteres**: Respete el número máximo de caracteres indicado para cada campo cuando esté especificado\n`;
+    prompt += `4. **Información faltante**: Si alguna información no está disponible, indique "No especificado" o "No disponible"\n`;
+    prompt += `5. **Objetividad**: Base sus respuestas únicamente en el contenido del artículo\n`;
+    prompt += `6. **Traducciones**: Para campos de traducción, mantenga el sentido original pero use español claro y académico\n`;
+    prompt += `7. **Realismo**: Se penaliza si completa información que el documento no mencione, es preferible indicar que no hay información al respecto en vez de inventarla.\n`;
+    prompt += `8. **Redacción**: Use un lenguaje no tan técnico, debe ser comprensible, manteniendo un tono académico. Las respuestas se dan en bloques de código de texto plano. IMPORTANTE: NADA DE FORMATO.\n`;
+    prompt += `9. **Citas**: Puedes mencionar al autor y año si el caso lo amerita, pero no coloques el número de página como parte de ninguna referencia.\n\n`;
 
-## INSTRUCCIONES GENERALES:
-
-1. **Lectura completa**: Lea todo el artículo antes de comenzar el análisis
-2. **Precisión**: Sea específico y preciso en sus respuestas
-3. **Límites de caracteres**: Respete el número máximo de caracteres indicado para cada campo cuando esté especificado
-4. **Información faltante**: Si alguna información no está disponible, indique "No especificado" o "No disponible"
-5. **Objetividad**: Base sus respuestas únicamente en el contenido del artículo
-6. **Traducciones**: Para campos de traducción, mantenga el sentido original pero use español claro y académico
-7. **Realismo**: Se penaliza si completa información que el documento no mencione, es preferible indicar que no hay información al respecto en vez de inventarla.
-8. **Redacción**: Use un lenguaje no tan técnico, debe ser comprensible, manteniendo un tono académico. Las respuestas se dan en bloques de código de texto plano. IMPORTANTE: NADA DE FORMATO.
-9. **Citas**: Puedes mencionar al autor y año si el caso lo amerita, pero no coloques el número de página como parte de ninguna referencia.
-
-## FORMATO DE RESPUESTA:
-Para cada campo listado arriba, proporcione su respuesta en el siguiente formato:
-"""
-**<Nombre del campo exacto>:**
-
-\`\`\`
-<Su respuesta aquí>
-\`\`\`
-"""
-
-`;
+    prompt += `## FORMATO DE RESPUESTA:\nPara cada campo listado arriba, proporcione su respuesta en el siguiente formato:\n"""\n**<Nombre del campo exacto>:**\n\n\`\`\`\n<Su respuesta aquí>\n\`\`\`\n"""\n\n`;
 
     return prompt;
 }
@@ -336,12 +302,14 @@ Por favor, complete los siguientes campos basándose en la lectura cuidadosa del
         prompt += `  }${comma}\n`;
     });
 
-    prompt += `]
+        prompt += `]
 \`\`\`
 
-**IMPORTANTE:** 
+**IMPORTANTE:**
 - Debe ser un ARRAY (corchetes []) de objetos
 - Cada objeto debe tener las propiedades "atributo" y "contenido"
+- La propiedad "contenido" DEBE ser una CADENA ÚNICA (string). No devuelva objetos ni arrays dentro de "contenido".
+- Si su modelo produce naturalmente múltiples párrafos o una lista (array), concaténelos en una sola cadena usando un salto de línea "\\n" entre elementos.
 - Debe respetar el MISMO ORDEN en que se presentan los campos arriba
 - La propiedad "atributo" es REFERENCIAL (puede usar nombres simplificados si lo desea)
 - El sistema asignará los valores por POSICIÓN en el array, no por el nombre del atributo
@@ -353,19 +321,18 @@ Por favor, complete los siguientes campos basándose en la lectura cuidadosa del
 **EJEMPLO DE FORMATO CORRECTO:**
 \`\`\`json
 [
-  {
-    "atributo": "Título",
-    "contenido": "Análisis de deep learning en imágenes médicas"
-  },
-  {
-    "atributo": "Resumen",
-    "contenido": "Este artículo presenta un estudio sobre..."
-  }
+    {
+        "atributo": "Título",
+        "contenido": "Análisis de deep learning en imágenes médicas"
+    },
+    {
+        "atributo": "Resumen",
+        "contenido": "Este artículo presenta un estudio sobre..."
+    }
 ]
 \`\`\`
 
 `;
-
     return prompt;
 }
 
