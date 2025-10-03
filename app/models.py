@@ -57,7 +57,7 @@ class Article:
                    estudios_previos, poblacion_muestra_datos, recoleccion_datos,
                    resultados, conclusiones, discusion, trabajos_futuros,
                    enlace, eid, seleccionado
-            FROM articulos ORDER BY id DESC
+            FROM articulos ORDER BY id ASC
         '''
         return DatabaseManager.execute_query(query, fetch_all=True)
     
@@ -77,7 +77,7 @@ class Article:
                    estudios_previos, poblacion_muestra_datos, recoleccion_datos,
                    resultados, conclusiones, discusion, trabajos_futuros,
                    enlace, eid, seleccionado
-            FROM articulos WHERE seleccionado = true ORDER BY id DESC
+            FROM articulos WHERE seleccionado = true ORDER BY id ASC
         '''
         return DatabaseManager.execute_query(query, fetch_all=True)
     
