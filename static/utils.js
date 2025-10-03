@@ -95,9 +95,24 @@ export function addCharacterCounters() {
     });
 }
 
-// Function to remove double asterisks from pasted text
+// Function to remove markdown syntax from pasted text
 export function cleanPastedText(text) {
-    return text.replace(/\*\*/g, '');
+    // Remove [cite: number] patterns
+    text = text.replace(/\[cite:\s*\d+\]/g, '');
+    
+    // Remove [cite_start] patterns
+    text = text.replace(/\[cite_start\]/g, '');
+    
+    // Remove [cite: number, number, ...] patterns
+    text = text.replace(/\[cite:\s*(\d+(?:,\s*\d+)*)\]/g, '');
+    
+    // Remove double asterisks (bold markdown)
+    text = text.replace(/\*\*/g, '');
+    
+    // Replace lines starting with "* " with "- "
+    text = text.replace(/^(\s*)\* /gm, '$1- ');
+    
+    return text;
 }
 
 // Function to add paste event listeners to modal fields
