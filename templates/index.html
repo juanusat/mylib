@@ -668,9 +668,14 @@
                     
                     <!-- Botones fijos -->
                     <div class="p-6 border-t flex justify-between space-x-2 flex-shrink-0 bg-white rounded-b-lg">
-                        <button onclick="openInstructionsModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
-                            <i class="fas fa-magic"></i> Generar instrucción
-                        </button>
+                        <div class="flex space-x-2">
+                            <button onclick="openInstructionsModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-magic"></i> Generar instrucción
+                            </button>
+                            <button onclick="removeSyntaxFromFields()" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg">
+                                <i class="fas fa-eraser"></i> Remover sintaxis
+                            </button>
+                        </div>
                         <div class="flex space-x-2">
                             <button onclick="closeModal()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
                                 Cancelar

@@ -1,6 +1,6 @@
 import { readonlyFields, columnMetadata, setColumnMetadata } from './config.js';
 import { renderDocumentSections } from './documents.js';
-import { setFieldValue, configureReadonlyFields, getFieldValue, cleanPastedText } from './utils.js';
+import { setFieldValue, configureReadonlyFields, getFieldValue, cleanPastedText, updateCharacterCounter } from './utils.js';
 
 // Función para resetear el estado del botón de importación
 function resetImportButtonState() {
@@ -736,5 +736,70 @@ export async function loadColumnMetadata() {
     } catch (error) {
         console.error('Error loading column metadata:', error);
         return [];
+    }
+}
+
+// Function to remove AI-generated syntax from all editable fields
+export function removeSyntaxFromFields() {
+    // Array of all field IDs in the edit modal (excluding readonly)
+    const editableFieldIds = [
+        'edit_base_datos', 'edit_quartil_revista',
+        'titulo_espanol', 'resumen',
+        'problema_articulo', 'pregunta_investigacion',
+        'tipo_investigacion', 'edit_datos_estadisticos',
+        'objetivo_espanol', 'objetivo_reescrito', 'justificacion', 'hipotesis',
+        'edit_estudios_previos', 'edit_poblacion_muestra_datos', 'edit_recoleccion_datos',
+        'resultados', 'conclusiones', 'edit_discusion', 'edit_trabajos_futuros',
+        'edit_enlace'
+    ];
+    
+    // Add objective_original only if it's not readonly
+    const objectiveField = document.getElementById('edit_objetivo_original');
+    if (objectiveField && !objectiveField.hasAttribute('readonly') && !objectiveField.classList.contains('scopus-imported-field')) {
+        editableFieldIds.push('edit_objetivo_original');
+    }
+    
+    let totalReplacements = 0;
+    
+    editableFieldIds.forEach(fieldId => {
+        const field = document.getElementById(fieldId);
+        
+        // Skip if field doesn't exist or is readonly
+        if (!field || field.hasAttribute('readonly') || field.classList.contains('scopus-imported-field')) {
+            return;
+        }
+        
+        const originalValue = field.value || '';
+        if (!originalValue.trim()) return; // Skip empty fields
+        
+        // Use cleanPastedText function to clean the text
+        const cleanedValue = cleanPastedText(originalValue);
+        
+        // Count the number of changes
+        if (cleanedValue !== originalValue) {
+            // Count replacements by comparing lengths and patterns
+            const citePatternsRemoved = (originalValue.match(/\[cite[^\]]*\]/g) || []).length;
+            const asterisksRemoved = (originalValue.match(/\*\*/g) || []).length;
+            const bulletPointsChanged = (originalValue.match(/^(\s*)\* /gm) || []).length;
+            
+            const fieldReplacements = citePatternsRemoved + asterisksRemoved + bulletPointsChanged;
+            totalReplacements += fieldReplacements;
+            
+            // Update field value
+            field.value = cleanedValue;
+            
+            // Update character counter if exists
+            updateCharacterCounter(fieldId);
+            
+            // Trigger input event for any listeners
+            field.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+    });
+    
+    // Show alert with number of replacements
+    if (totalReplacements > 0) {
+        alert(`✓ Se realizaron ${totalReplacements} reemplazo(s) de sintaxis en los campos editables.`);
+    } else {
+        alert('No se encontró sintaxis para remover en los campos editables.');
     }
 }

@@ -2,7 +2,7 @@ import { setAllArticles, setFilteredArticles, allArticles } from './config.js';
 import { loadFieldMetadata, loadArticles, checkCSV, importCSV, editArticle, saveArticle, handleToggleSelection, exportExcelAll, exportExcelBookmarks, uploadDocument, deleteDocument, refreshArticleInModal, setImportButtonLoading } from './api.js';
 import { renderTable, goToPage, changeItemsPerPage, filterArticles, updateColumns, toggleColumnSettings, toggleExportDropdown, downloadExcelFile, exportExcel } from './table.js';
 import { viewDocument, openDocumentSidebar, createDocumentSidebar, closeDocumentSidebar, openInNewTab, toggleFullscreen, getDocumentByType, renderDocumentSections, renderDocumentSection, showUploadForm, cancelUpload } from './documents.js';
-import { showDuplicateConfirmation, closeConfirmModal, proceedWithImport, forceImport, closeModal, showMessage, showModalMessage, clearModalMessage, showInstructionsMessage, openInstructionsModal, generateInstructionsPrompt, generateInstructionsPromptJSON, regenerateInstructions, regenerateInstructionsJSON, copyInstructions, copyInstructionsJSON, validateAndApplyJSON, closeInstructionsModal, loadColumnMetadata } from './modals.js';
+import { showDuplicateConfirmation, closeConfirmModal, proceedWithImport, forceImport, closeModal, showMessage, showModalMessage, clearModalMessage, showInstructionsMessage, openInstructionsModal, generateInstructionsPrompt, generateInstructionsPromptJSON, regenerateInstructions, regenerateInstructionsJSON, copyInstructions, copyInstructionsJSON, validateAndApplyJSON, closeInstructionsModal, loadColumnMetadata, removeSyntaxFromFields } from './modals.js';
 import { setFieldValue, configureReadonlyFields, getFieldValue } from './utils.js';
 
 // Load articles on page load
@@ -70,4 +70,5 @@ window.copyInstructions = copyInstructions;
 window.copyInstructionsJSON = copyInstructionsJSON;
 window.validateAndApplyJSON = validateAndApplyJSON;
 window.closeInstructionsModal = closeInstructionsModal;
+window.removeSyntaxFromFields = removeSyntaxFromFields;
 window.setImportButtonLoading = setImportButtonLoading;
