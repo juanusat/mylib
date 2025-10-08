@@ -31,7 +31,7 @@ document.addEventListener('click', function(event) {
         dropdown.classList.add('hidden');
     }
 });
-document.querySelector('#toggleWidthText').addEventListener('click', toggleContainerWidth);
+document.querySelector('#toggleWidthBtn').addEventListener('click', toggleContainerWidth);
 
 // Make functions globally available for onclick handlers
 window.checkCSV = checkCSV;
