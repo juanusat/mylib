@@ -58,8 +58,9 @@ export function renderTableBody() {
     const endIndex = startIndex + itemsPerPage;
     const pageArticles = filteredArticles.slice(startIndex, endIndex);
 
-    tbody.innerHTML = pageArticles.map(article => {
+    tbody.innerHTML = pageArticles.map((article, index) => {
         const cells = [];
+        const rowNumber = startIndex + index + 1;
         
         if (visibleColumns.id) cells.push(`<td class="border border-gray-300 px-4 py-2">${article.id}</td>`);
         if (visibleColumns.titulo_original) cells.push(`<td class="border border-gray-300 px-4 py-2 max-w-md overflow-hidden text-ellipsis" title="${article.titulo_original || ''}">${article.titulo_original || ''}</td>`);
@@ -140,7 +141,7 @@ export function renderTableBody() {
         }
         
         // Actions column
-        const documentsInfo = getDocumentsInfo(article);
+        const documentsInfo = getDocumentsInfo(article, rowNumber);
         cells.push(`
             <td class="border border-gray-300 px-4 py-2">
                 <div class="flex space-x-2">
@@ -156,6 +157,8 @@ export function renderTableBody() {
         
         return `<tr>${cells.join('')}</tr>`;
     }).join('');
+    
+    addCellClickListeners();
 }
 
 export function renderPagination() {
@@ -273,41 +276,47 @@ export function toggleExportDropdown() {
     dropdown.classList.toggle('hidden');
 }
 
-function getDocumentsInfo(article) {
+function getDocumentsInfo(article, rowNumber) {
     if (!article.documentos || article.documentos.length === 0) {
         return '';
     }
     
     let buttons = [];
+    let originalDoc = null;
+    let translatedDoc = null;
     
-    // Primero buscar y añadir el botón del documento original
     for (const doc of article.documentos) {
-        if (doc.nombre_archivo_original) {
-            buttons.push(`
-                <button onclick="event.preventDefault(); event.stopPropagation(); viewDocument('${doc.nombre_archivo_original}', event)" 
-                        class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs" 
-                        title="Ver documento original"
-                        type="button">
-                    <i class="fas fa-file-pdf"></i>
-                </button>
-            `);
-            break; // Solo añadir el primer documento original encontrado
+        if (doc.nombre_archivo_original && !originalDoc) {
+            originalDoc = doc.nombre_archivo_original;
+        }
+        if (doc.nombre_archivo_traducido && !translatedDoc) {
+            translatedDoc = doc.nombre_archivo_traducido;
         }
     }
     
-    // Luego buscar y añadir el botón del documento en español
-    for (const doc of article.documentos) {
-        if (doc.nombre_archivo_traducido) {
-            buttons.push(`
-                <button onclick="event.preventDefault(); event.stopPropagation(); viewDocument('${doc.nombre_archivo_traducido}', event)" 
-                        class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" 
-                        title="Ver documento en español"
-                        type="button">
-                    <i class="fas fa-file-pdf"></i>
-                </button>
-            `);
-            break; // Solo añadir el primer documento traducido encontrado
-        }
+    const articleTitle = article.titulo_espanol || article.titulo_original || 'Sin título';
+    const escapedTitle = articleTitle.replace(/'/g, "\\'");
+    
+    if (originalDoc) {
+        buttons.push(`
+            <button onclick="event.preventDefault(); event.stopPropagation(); viewDocument('${originalDoc}', '${translatedDoc || ''}', '${rowNumber}', '${escapedTitle}', event)" 
+                    class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-xs" 
+                    title="Ver documento original"
+                    type="button">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+        `);
+    }
+    
+    if (translatedDoc) {
+        buttons.push(`
+            <button onclick="event.preventDefault(); event.stopPropagation(); viewDocument('${translatedDoc}', '${originalDoc || ''}', '${rowNumber}', '${escapedTitle}', event)" 
+                    class="bg-blue-500 hover:bg-blue-600 text-white px-2 py-1 rounded text-xs" 
+                    title="Ver documento en español"
+                    type="button">
+                <i class="fas fa-file-pdf"></i>
+            </button>
+        `);
     }
     
     return buttons.join('');
@@ -343,6 +352,28 @@ export function downloadExcelFile(blob, baseName) {
 }
 
 export function exportExcel() {
-    // Mantener compatibilidad con la función original por si se llama desde algún lugar
     exportExcelAll();
+}
+
+function addCellClickListeners() {
+    const tbody = document.getElementById('articlesTable');
+    if (!tbody) return;
+    
+    tbody.addEventListener('click', function(event) {
+        const clickedCell = event.target.closest('td');
+        if (!clickedCell) return;
+        
+        const clickedRow = clickedCell.closest('tr');
+        if (!clickedRow) return;
+        
+        document.querySelectorAll('td.cell-highlight').forEach(cell => {
+            cell.classList.remove('cell-highlight');
+        });
+        document.querySelectorAll('tr.row-highlight').forEach(row => {
+            row.classList.remove('row-highlight');
+        });
+        
+        clickedCell.classList.add('cell-highlight');
+        clickedRow.classList.add('row-highlight');
+    });
 }

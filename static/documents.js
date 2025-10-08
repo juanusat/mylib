@@ -1,5 +1,4 @@
-export function viewDocument(filename, event) {
-    // Prevenir comportamiento por defecto del evento
+export function viewDocument(filename, alternateFilename, rowNumber, articleTitle, event) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -17,20 +16,44 @@ export function viewDocument(filename, event) {
         return;
     }
     
-    openDocumentSidebar(url, filename);
+    openDocumentSidebar(url, filename, alternateFilename, rowNumber, articleTitle);
 }
 
-export function openDocumentSidebar(url, filename) {
+export function openDocumentSidebar(url, filename, alternateFilename, rowNumber, articleTitle) {
     let sidebar = document.getElementById('documentSidebar');
     if (!sidebar) {
         sidebar = createDocumentSidebar();
     }
     
     const iframe = sidebar.querySelector('#documentIframe');
-    const titleElement = sidebar.querySelector('#documentTitle');
+    const articleTitleElement = sidebar.querySelector('#articleTitle');
+    const documentTitleElement = sidebar.querySelector('#documentTitle');
+    const toggleButton = sidebar.querySelector('#toggleLanguageButton');
     
     iframe.src = url;
-    titleElement.textContent = filename;
+    
+    if (articleTitleElement && rowNumber && articleTitle) {
+        articleTitleElement.textContent = `${rowNumber}. ${articleTitle}`;
+    }
+    
+    if (documentTitleElement) {
+        documentTitleElement.textContent = filename;
+    }
+    
+    if (alternateFilename && alternateFilename.trim() !== '') {
+        toggleButton.style.display = 'block';
+        toggleButton.onclick = () => switchDocument(alternateFilename, filename, rowNumber, articleTitle);
+        
+        const isSpanish = filename.includes('-SPANISH');
+        toggleButton.innerHTML = isSpanish 
+            ? '<i class="fas fa-language"></i> EN'
+            : '<i class="fas fa-language"></i> ES';
+        toggleButton.title = isSpanish 
+            ? 'Ver en inglés'
+            : 'Ver en español';
+    } else {
+        toggleButton.style.display = 'none';
+    }
     
     sidebar.classList.remove('hidden');
     sidebar.classList.add('flex');
@@ -43,12 +66,21 @@ export function createDocumentSidebar() {
     sidebar.className = 'fixed top-0 right-0 h-full w-1/2 bg-white shadow-2xl z-50 hidden flex-col border-l border-gray-300';
     
     sidebar.innerHTML = `
-        <div class="flex items-center justify-between p-4 border-b bg-gray-50">
-            <div class="flex items-center space-x-2 flex-1 min-w-0">
-                <i class="fas fa-file-pdf text-red-500"></i>
-                <span id="documentTitle" class="font-medium text-gray-800 truncate"></span>
+        <div class="flex items-center justify-between py-2 px-4 border-b bg-gray-50">
+            <div class="flex flex-col flex-1 min-w-0">
+                <div class="flex items-center space-x-2 mb-1">
+                    <i class="fas fa-file-pdf text-red-500"></i>
+                    <span id="articleTitle" class="font-medium text-gray-800 truncate"></span>
+                </div>
+                <span id="documentTitle" class="text-sm text-gray-500 truncate ml-5"></span>
             </div>
             <div class="flex space-x-2 ml-2">
+                <button id="toggleLanguageButton" 
+                        class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-sm" 
+                        style="display: none;"
+                        title="Alternar idioma">
+                    <i class="fas fa-language"></i>
+                </button>
                 <button onclick="openInNewTab()" 
                         class="bg-purple-500 hover:bg-purple-600 text-white px-3 py-1 rounded text-sm" 
                         title="Abrir en nueva pestaña">
@@ -252,8 +284,28 @@ export function showUploadForm(sectionId, articleId, docType) {
 }
 
 export async function cancelUpload(sectionId, articleId, docType) {
-    // Recargar la sección de documentos
     const response = await fetch(`/api/articles/${articleId}`);
     const article = await response.json();
     renderDocumentSection(sectionId, article, docType);
+}
+
+function switchDocument(newFilename, alternateFilename, rowNumber, articleTitle) {
+    const url = `/api/documents/${newFilename}`;
+    const sidebar = document.getElementById('documentSidebar');
+    const iframe = sidebar.querySelector('#documentIframe');
+    const documentTitleElement = sidebar.querySelector('#documentTitle');
+    const toggleButton = sidebar.querySelector('#toggleLanguageButton');
+    
+    iframe.src = url;
+    documentTitleElement.textContent = newFilename;
+    
+    toggleButton.onclick = () => switchDocument(alternateFilename, newFilename, rowNumber, articleTitle);
+    
+    const isSpanish = newFilename.includes('-SPANISH');
+    toggleButton.innerHTML = isSpanish 
+        ? '<i class="fas fa-language"></i> EN'
+        : '<i class="fas fa-language"></i> ES';
+    toggleButton.title = isSpanish 
+        ? 'Ver en inglés'
+        : 'Ver en español';
 }
