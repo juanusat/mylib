@@ -135,7 +135,7 @@ export async function editArticle(id) {
         const modalTitle = document.querySelector('#editModal h3');
         if (modalTitle) {
             const indexText = articleIndex !== -1 ? ` (#${articleIndex})` : '';
-            modalTitle.innerHTML = `<i class="fas fa-edit text-blue-600"></i> Editar Artículo${indexText}`;
+            modalTitle.innerHTML = `<i class="fas fa-edit text-blue-600"></i> Editar Artículo${indexText + 1}`;
         }
         
         // Populate form fields
