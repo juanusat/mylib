@@ -40,7 +40,7 @@ export function openDocumentSidebar(url, filename, alternateFilename, rowNumber,
         documentTitleElement.textContent = filename;
     }
     
-    if (alternateFilename && alternateFilename.trim() !== '') {
+    if (alternateFilename && typeof alternateFilename === 'string' && alternateFilename.trim() !== '') {
         toggleButton.style.display = 'block';
         toggleButton.onclick = () => switchDocument(alternateFilename, filename, rowNumber, articleTitle);
         
