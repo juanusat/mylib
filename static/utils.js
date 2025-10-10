@@ -112,6 +112,12 @@ export function cleanPastedText(text) {
     // Replace lines starting with "* " with "- "
     text = text.replace(/^(\s*)\* /gm, '$1- ');
     
+    // Replace " ; " with ";"
+    text = text.replace(/\s+;\s+/g, ';');
+    
+    // Remove spaces after periods at the end of lines
+    text = text.replace(/\.\s+$/gm, '.');
+    
     return text;
 }
 
@@ -260,5 +266,41 @@ export function toggleContainerWidth() {
         container.classList.remove('w-full');
         container.classList.add('container', 'mx-auto');
         btnText.textContent = 'Ancho completo';
+    }
+}
+
+// Function to auto-resize a single textarea to fit its content
+export function autoResizeTextarea(textarea) {
+    if (!textarea) return;
+    
+    // Store the original overflow setting
+    const originalOverflow = textarea.style.overflow;
+    
+    // Temporarily hide scrollbar to get accurate scrollHeight
+    textarea.style.overflow = 'hidden';
+    
+    // Reset height to auto to get the correct scrollHeight
+    textarea.style.height = 'auto';
+    
+    // Calculate the needed height
+    const scrollHeight = textarea.scrollHeight;
+    const minRows = parseInt(textarea.getAttribute('rows') || '2');
+    const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 20;
+    const padding = parseFloat(getComputedStyle(textarea).paddingTop) + parseFloat(getComputedStyle(textarea).paddingBottom) || 16;
+    const border = parseFloat(getComputedStyle(textarea).borderTopWidth) + parseFloat(getComputedStyle(textarea).borderBottomWidth) || 2;
+    
+    const minHeight = minRows * lineHeight + padding + border;
+    
+    // Set the height to fit content, with a reasonable minimum and maximum
+    const maxHeight = window.innerHeight * 0.3; // Max 30% of viewport height
+    const newHeight = Math.min(Math.max(scrollHeight, minHeight), maxHeight);
+    
+    textarea.style.height = newHeight + 'px';
+    
+    // Restore overflow if needed
+    if (newHeight >= maxHeight) {
+        textarea.style.overflow = 'auto';
+    } else {
+        textarea.style.overflow = originalOverflow;
     }
 }

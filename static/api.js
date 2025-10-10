@@ -2,7 +2,7 @@ import { setAllArticles, setReadonlyFields, setColumnMetadata, allArticles, filt
 import { renderTable, downloadExcelFile } from './table.js';
 import { renderDocumentSections } from './documents.js';
 import { showDuplicateConfirmation, showMessage, showModalMessage, clearModalMessage, closeModal } from './modals.js';
-import { setFieldValue, configureReadonlyFields, getFieldValue, addPasteEventListeners, addCharacterCounters } from './utils.js';
+import { setFieldValue, configureReadonlyFields, getFieldValue, cleanPastedText, updateCharacterCounter, addCharacterCounters, addPasteEventListeners, autoResizeTextarea } from './utils.js';
 
 // Funciones para manejar el estado de carga del botón
 export function setImportButtonLoading(loading) {
@@ -203,21 +203,41 @@ function autoResizeTextareas() {
     const textareas = document.querySelectorAll('#editModal textarea');
     
     textareas.forEach(textarea => {
-        if (textarea.value && textarea.value.trim() !== '') {
-            // Reset height to auto to get the correct scrollHeight
-            textarea.style.height = 'auto';
-            
-            // Calculate the needed height
-            const scrollHeight = textarea.scrollHeight;
-            const minRows = parseInt(textarea.getAttribute('rows') || '2');
-            const lineHeight = 20; // Approximate line height in pixels
-            const minHeight = minRows * lineHeight + 16; // Add padding
-            
-            // Set the height to fit content, with a reasonable minimum
-            const newHeight = Math.max(scrollHeight + 4, minHeight);
-            textarea.style.height = newHeight + 'px';
-        }
+        // Initial resize
+        autoResizeTextarea(textarea);
+        
+        // Add event listeners for dynamic resizing
+        textarea.removeEventListener('input', handleTextareaInput);
+        textarea.addEventListener('input', handleTextareaInput);
+        
+        textarea.removeEventListener('paste', handleTextareaPaste);
+        textarea.addEventListener('paste', handleTextareaPaste);
+        
+        textarea.removeEventListener('keydown', handleTextareaKeydown);
+        textarea.addEventListener('keydown', handleTextareaKeydown);
     });
+}
+
+// Event handler for textarea input
+function handleTextareaInput(event) {
+    autoResizeTextarea(event.target);
+}
+
+// Event handler for textarea paste
+function handleTextareaPaste(event) {
+    setTimeout(() => {
+        autoResizeTextarea(event.target);
+    }, 50);
+}
+
+// Event handler for textarea keydown
+function handleTextareaKeydown(event) {
+    // Resize on Enter key
+    if (event.key === 'Enter') {
+        setTimeout(() => {
+            autoResizeTextarea(event.target);
+        }, 10);
+    }
 }
 
 export async function saveArticle() {

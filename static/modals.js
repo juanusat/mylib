@@ -1,6 +1,6 @@
 import { readonlyFields, columnMetadata, setColumnMetadata } from './config.js';
 import { renderDocumentSections } from './documents.js';
-import { setFieldValue, configureReadonlyFields, getFieldValue, cleanPastedText, updateCharacterCounter } from './utils.js';
+import { setFieldValue, configureReadonlyFields, getFieldValue, cleanPastedText, updateCharacterCounter, autoResizeTextarea } from './utils.js';
 
 // Función para resetear el estado del botón de importación
 function resetImportButtonState() {
@@ -788,8 +788,10 @@ export function removeSyntaxFromFields() {
             const citePatternsRemoved = (originalValue.match(/\[cite[^\]]*\]/g) || []).length;
             const asterisksRemoved = (originalValue.match(/\*\*/g) || []).length;
             const bulletPointsChanged = (originalValue.match(/^(\s*)\* /gm) || []).length;
+            const semicolonSpacesRemoved = (originalValue.match(/\s+;\s+/g) || []).length;
+            const trailingSpacesRemoved = (originalValue.match(/\.\s+$/gm) || []).length;
             
-            const fieldReplacements = citePatternsRemoved + asterisksRemoved + bulletPointsChanged;
+            const fieldReplacements = citePatternsRemoved + asterisksRemoved + bulletPointsChanged + semicolonSpacesRemoved + trailingSpacesRemoved;
             totalReplacements += fieldReplacements;
             
             // Update field value
@@ -798,6 +800,11 @@ export function removeSyntaxFromFields() {
             // Update character counter if exists
             updateCharacterCounter(fieldId);
             
+            // Auto-resize textarea if it's a textarea element
+            if (field.tagName.toLowerCase() === 'textarea') {
+                autoResizeTextarea(field);
+            }
+            
             // Trigger input event for any listeners
             field.dispatchEvent(new Event('input', { bubbles: true }));
         }
@@ -805,7 +812,7 @@ export function removeSyntaxFromFields() {
     
     // Show alert with number of replacements
     if (totalReplacements > 0) {
-        alert(`✓ Se realizaron ${totalReplacements} reemplazo(s) de sintaxis en los campos editables.`);
+        alert(`✓ Se realizaron ${totalReplacements} reemplazo(s) de sintaxis en los campos editables.\n\nSe removieron:\n- Referencias [cite:]\n- Asteriscos de formato\n- Espacios alrededor de punto y coma\n- Espacios al final de líneas que terminan con punto\n- Viñetas convertidas a guiones`);
     } else {
         alert('No se encontró sintaxis para remover en los campos editables.');
     }
