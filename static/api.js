@@ -309,10 +309,18 @@ export async function saveArticle() {
         if (response.ok) {
             const updatedArticle = await response.json();
             
+            // Preserve documents information from original article
+            const originalArticleIndex = allArticles.findIndex(a => a.id === parseInt(id));
+            const originalDocuments = originalArticleIndex !== -1 ? allArticles[originalArticleIndex].documentos : null;
+            
+            // Add documents to updated article if they exist
+            if (originalDocuments) {
+                updatedArticle.documentos = originalDocuments;
+            }
+            
             // Update the article in allArticles array immediately
-            const articleIndex = allArticles.findIndex(a => a.id === parseInt(id));
-            if (articleIndex !== -1) {
-                allArticles[articleIndex] = updatedArticle;
+            if (originalArticleIndex !== -1) {
+                allArticles[originalArticleIndex] = updatedArticle;
             }
             
             // Update the article in filteredArticles array
@@ -320,9 +328,6 @@ export async function saveArticle() {
             if (filteredIndex !== -1) {
                 filteredArticles[filteredIndex] = updatedArticle;
             }
-            
-            // Update the table immediately
-            renderTable();
             
             showMessage('Artículo actualizado correctamente', 'success');
             closeModal();

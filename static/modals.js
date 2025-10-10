@@ -2,6 +2,41 @@ import { readonlyFields, columnMetadata, setColumnMetadata } from './config.js';
 import { renderDocumentSections } from './documents.js';
 import { setFieldValue, configureReadonlyFields, getFieldValue, cleanPastedText, updateCharacterCounter, autoResizeTextarea } from './utils.js';
 
+export function preserveTableSelection() {
+    const highlightedRow = document.querySelector('tr.row-highlight');
+    const highlightedCell = document.querySelector('td.cell-highlight');
+    
+    if (!highlightedRow || !highlightedCell) return null;
+    
+    const rowIndex = Array.from(highlightedRow.parentNode.children).indexOf(highlightedRow);
+    const cellIndex = Array.from(highlightedRow.children).indexOf(highlightedCell);
+    
+    return { rowIndex, cellIndex };
+}
+
+export function restoreTableSelection(selectionState) {
+    if (!selectionState) return;
+    
+    const tbody = document.getElementById('articlesTable');
+    if (!tbody) return;
+    
+    const targetRow = tbody.children[selectionState.rowIndex];
+    if (!targetRow) return;
+    
+    const targetCell = targetRow.children[selectionState.cellIndex];
+    if (!targetCell) return;
+    
+    document.querySelectorAll('td.cell-highlight').forEach(cell => {
+        cell.classList.remove('cell-highlight');
+    });
+    document.querySelectorAll('tr.row-highlight').forEach(row => {
+        row.classList.remove('row-highlight');
+    });
+    
+    targetCell.classList.add('cell-highlight');
+    targetRow.classList.add('row-highlight');
+}
+
 // Función para resetear el estado del botón de importación
 function resetImportButtonState() {
     const button = document.getElementById('importButton');
@@ -64,12 +99,14 @@ export function forceImport() {
 }
 
 export function closeModal() {
+    const selectionState = preserveTableSelection();
+    
     document.getElementById('editModal').classList.add('hidden');
     document.body.style.overflow = 'auto';
     
-    // Force table re-render to ensure all buttons are displayed correctly
     import('./table.js').then(module => {
         module.renderTable();
+        setTimeout(() => restoreTableSelection(selectionState), 50);
     }).catch(error => {
         console.error('Error re-rendering table after modal close:', error);
     });
