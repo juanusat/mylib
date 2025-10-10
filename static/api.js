@@ -129,13 +129,14 @@ export async function editArticle(id) {
         const article = await response.json();
         
         // Calculate the article index in the current filtered view
-        const articleIndex = filteredArticles.findIndex(a => a.id === parseInt(id));
+        let articleIndex = filteredArticles.findIndex(a => a.id === parseInt(id));
+        articleIndex += 1
         
         // Update modal title with index
         const modalTitle = document.querySelector('#editModal h3');
         if (modalTitle) {
             const indexText = articleIndex !== -1 ? ` (#${articleIndex})` : '';
-            modalTitle.innerHTML = `<i class="fas fa-edit text-blue-600"></i> Editar Artículo${indexText + 1}`;
+            modalTitle.innerHTML = `<i class="fas fa-edit text-blue-600"></i> Editar Artículo${indexText}`;
         }
         
         // Populate form fields
@@ -184,15 +185,17 @@ export async function editArticle(id) {
         // Add character counters and their event listeners
         addCharacterCounters();
         
-        // Auto-resize textareas to fit content
-        autoResizeTextareas();
-        
         // Clear any previous modal messages
         clearModalMessage();
         
-        // Show modal
+        // Show modal first
         document.getElementById('editModal').classList.remove('hidden');
         document.body.style.overflow = 'hidden';
+        
+        // Auto-resize textareas after modal is visible and DOM is updated
+        setTimeout(() => {
+            autoResizeTextareas();
+        }, 100);
     } catch (error) {
         console.error('Error loading article:', error);
     }
@@ -200,13 +203,29 @@ export async function editArticle(id) {
 
 // Function to auto-resize all textareas in the modal to fit their content
 function autoResizeTextareas() {
+    const modal = document.getElementById('editModal');
+    
+    // Check if modal is visible before proceeding
+    if (!modal || modal.classList.contains('hidden')) {
+        console.warn('Modal is not visible, skipping textarea auto-resize');
+        return;
+    }
+    
     const textareas = document.querySelectorAll('#editModal textarea');
     
     textareas.forEach(textarea => {
-        // Initial resize
-        autoResizeTextarea(textarea);
+        // Check if textarea is visible and has dimensions
+        if (textarea.offsetHeight === 0 || textarea.offsetWidth === 0) {
+            // If not visible yet, wait a bit more
+            setTimeout(() => {
+                autoResizeTextarea(textarea);
+            }, 50);
+        } else {
+            // Initial resize
+            autoResizeTextarea(textarea);
+        }
         
-        // Add event listeners for dynamic resizing
+        // Add event listeners for dynamic resizing (remove existing first to avoid duplicates)
         textarea.removeEventListener('input', handleTextareaInput);
         textarea.addEventListener('input', handleTextareaInput);
         

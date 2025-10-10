@@ -273,6 +273,13 @@ export function toggleContainerWidth() {
 export function autoResizeTextarea(textarea) {
     if (!textarea) return;
     
+    // Check if textarea is visible and has dimensions
+    if (textarea.offsetHeight === 0 || textarea.offsetWidth === 0) {
+        // Element not visible yet, retry after a short delay
+        setTimeout(() => autoResizeTextarea(textarea), 50);
+        return;
+    }
+    
     // Store the original overflow setting
     const originalOverflow = textarea.style.overflow;
     
@@ -282,13 +289,28 @@ export function autoResizeTextarea(textarea) {
     // Reset height to auto to get the correct scrollHeight
     textarea.style.height = 'auto';
     
+    // Get computed styles
+    const computedStyle = getComputedStyle(textarea);
+    
     // Calculate the needed height
     const scrollHeight = textarea.scrollHeight;
     const minRows = parseInt(textarea.getAttribute('rows') || '2');
-    const lineHeight = parseFloat(getComputedStyle(textarea).lineHeight) || 20;
-    const padding = parseFloat(getComputedStyle(textarea).paddingTop) + parseFloat(getComputedStyle(textarea).paddingBottom) || 16;
-    const border = parseFloat(getComputedStyle(textarea).borderTopWidth) + parseFloat(getComputedStyle(textarea).borderBottomWidth) || 2;
     
+    // Get line height - handle both px and number values
+    let lineHeight = parseFloat(computedStyle.lineHeight);
+    if (isNaN(lineHeight) || computedStyle.lineHeight === 'normal') {
+        // Fallback: calculate line height from font size
+        const fontSize = parseFloat(computedStyle.fontSize) || 16;
+        lineHeight = fontSize * 1.2; // Default line-height multiplier
+    }
+    
+    const paddingTop = parseFloat(computedStyle.paddingTop) || 0;
+    const paddingBottom = parseFloat(computedStyle.paddingBottom) || 0;
+    const borderTop = parseFloat(computedStyle.borderTopWidth) || 0;
+    const borderBottom = parseFloat(computedStyle.borderBottomWidth) || 0;
+    
+    const padding = paddingTop + paddingBottom;
+    const border = borderTop + borderBottom;
     const minHeight = minRows * lineHeight + padding + border;
     
     // Set the height to fit content, with a reasonable minimum and maximum
