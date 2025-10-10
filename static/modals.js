@@ -66,6 +66,13 @@ export function forceImport() {
 export function closeModal() {
     document.getElementById('editModal').classList.add('hidden');
     document.body.style.overflow = 'auto';
+    
+    // Force table re-render to ensure all buttons are displayed correctly
+    import('./table.js').then(module => {
+        module.renderTable();
+    }).catch(error => {
+        console.error('Error re-rendering table after modal close:', error);
+    });
 }
 
 export function showMessage(message, type) {

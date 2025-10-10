@@ -128,6 +128,16 @@ export async function editArticle(id) {
         const response = await fetch(`/api/articles/${id}`);
         const article = await response.json();
         
+        // Calculate the article index in the current filtered view
+        const articleIndex = filteredArticles.findIndex(a => a.id === parseInt(id));
+        
+        // Update modal title with index
+        const modalTitle = document.querySelector('#editModal h3');
+        if (modalTitle) {
+            const indexText = articleIndex !== -1 ? ` (#${articleIndex})` : '';
+            modalTitle.innerHTML = `<i class="fas fa-edit text-blue-600"></i> Editar Artículo${indexText}`;
+        }
+        
         // Populate form fields
         document.getElementById('articleId').value = article.id;
         setFieldValue('edit_id', article.id);
@@ -174,6 +184,9 @@ export async function editArticle(id) {
         // Add character counters and their event listeners
         addCharacterCounters();
         
+        // Auto-resize textareas to fit content
+        autoResizeTextareas();
+        
         // Clear any previous modal messages
         clearModalMessage();
         
@@ -183,6 +196,28 @@ export async function editArticle(id) {
     } catch (error) {
         console.error('Error loading article:', error);
     }
+}
+
+// Function to auto-resize all textareas in the modal to fit their content
+function autoResizeTextareas() {
+    const textareas = document.querySelectorAll('#editModal textarea');
+    
+    textareas.forEach(textarea => {
+        if (textarea.value && textarea.value.trim() !== '') {
+            // Reset height to auto to get the correct scrollHeight
+            textarea.style.height = 'auto';
+            
+            // Calculate the needed height
+            const scrollHeight = textarea.scrollHeight;
+            const minRows = parseInt(textarea.getAttribute('rows') || '2');
+            const lineHeight = 20; // Approximate line height in pixels
+            const minHeight = minRows * lineHeight + 16; // Add padding
+            
+            // Set the height to fit content, with a reasonable minimum
+            const newHeight = Math.max(scrollHeight + 4, minHeight);
+            textarea.style.height = newHeight + 'px';
+        }
+    });
 }
 
 export async function saveArticle() {
