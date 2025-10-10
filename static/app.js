@@ -33,6 +33,21 @@ document.addEventListener('click', function(event) {
 });
 document.querySelector('#toggleWidthBtn').addEventListener('click', toggleContainerWidth);
 
+// Global keyboard shortcut for Ctrl+Alt+M to resize textareas
+document.addEventListener('keydown', function(event) {
+    if (event.ctrlKey && event.altKey && event.key.toLowerCase() === 'm') {
+        const editModal = document.getElementById('editModal');
+        if (editModal && !editModal.classList.contains('hidden')) {
+            event.preventDefault();
+            const textareas = document.querySelectorAll('div#editModal textarea');
+            textareas.forEach(function(textarea) {
+                textarea.style.height = 'auto';
+                textarea.style.height = textarea.scrollHeight + 'px';
+            });
+        }
+    }
+});
+
 // Make functions globally available for onclick handlers
 window.checkCSV = checkCSV;
 window.importCSV = importCSV;
