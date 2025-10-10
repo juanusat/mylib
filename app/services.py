@@ -190,6 +190,18 @@ class ExcelService:
     TEXT_WRAP_COLUMNS = [6, 7, 9, 10]
     
     @staticmethod
+    def _escape_excel_formula(value):
+        if value is None:
+            return value
+        
+        str_value = str(value)
+        
+        if str_value.startswith(('-', '+', '=', '@')):
+            return f"'{str_value}"
+        
+        return value
+
+    @staticmethod
     def _get_local_timestamp():
         local_time = datetime.now()
         return local_time.strftime('%Y-%m-%d--%H-%M-%S')
@@ -212,7 +224,8 @@ class ExcelService:
         """Llena el worksheet con los datos de los artículos"""
         for row_idx, article in enumerate(articles, 2):
             for col_idx, value in enumerate(article, 1):
-                cell = ws.cell(row=row_idx, column=col_idx, value=value)
+                escaped_value = ExcelService._escape_excel_formula(value)
+                cell = ws.cell(row=row_idx, column=col_idx, value=escaped_value)
                 # Ajustar texto para campos largos
                 if col_idx in ExcelService.TEXT_WRAP_COLUMNS:
                     cell.alignment = Alignment(wrap_text=True, vertical='top')
